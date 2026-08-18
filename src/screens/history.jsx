@@ -61,7 +61,13 @@ function History() {
 
                                     <br />
 
-                                    Сумма: {item.amount} ₽
+                                    Сумма: {item.amount}{" "}
+
+                                    {item.currency === "rub" && "₽"}
+
+                                    {item.currency === "dollar" && "$"}
+
+                                    {item.currency === "som" && "с"}
 
                                 </div>
 

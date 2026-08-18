@@ -14,7 +14,7 @@ function Topup() {
     );
 
 
-    /* ЧИСЛО */
+    /* СУММА */
 
     const [number, setNumber] = useState("");
 
@@ -23,49 +23,104 @@ function Topup() {
     const [topupResult, setTopupResult] = useState("");
 
 
-    /* КНОПКА */
+    /* ВАЛЮТА */
 
-function topup() {
-
-    const oldResult = Number(
-        localStorage.getItem("result") || 0
-    );
-
-    const newResult = oldResult + Number(number);
-
-    setResult(newResult);
-
-    localStorage.setItem("result", newResult);
+    const [currency, setCurrency] = useState("rub");
 
 
-    /* ИСТОРИЯ */
+    /* ПОПОЛНЕНИЕ */
 
-    const history = JSON.parse(
-        localStorage.getItem("history") || "[]"
-    );
+    function topup() {
 
-    history.push({
-        type: "Пополнение",
-        amount: Number(number)
-    });
+        if (Number(number) <= 0) {
 
-    localStorage.setItem(
-        "history",
-        JSON.stringify(history)
-    );
+            alert("Введите сумму");
+
+            return;
+        }
 
 
-    setTopupResult(number);
+        let key = "";
 
-    localStorage.setItem("topupResult", number);
 
-}
+        if (currency === "rub") {
+
+            key = "result_rub";
+
+        }
+
+        if (currency === "dollar") {
+
+            key = "result_dollar";
+
+        }
+
+        if (currency === "som") {
+
+            key = "result_sum";
+
+        }
+
+
+        const oldResult = Number(
+            localStorage.getItem(key) || 0
+        );
+
+
+        const newResult = oldResult + Number(number);
+
+
+        setResult(newResult);
+
+        localStorage.setItem(
+            key,
+            newResult
+        );
+
+
+        /* ПОСЛЕДНЕЕ ПОПОЛНЕНИЕ */
+
+        setTopupResult(number);
+
+        localStorage.setItem(
+            "topupResult",
+            number
+        );
+
+
+        /* ИСТОРИЯ */
+
+        const history = JSON.parse(
+            localStorage.getItem("history") || "[]"
+        );
+
+
+        history.push({
+
+            type: "Пополнение",
+
+            amount: Number(number),
+
+            currency: currency
+
+        });
+
+
+        localStorage.setItem(
+            "history",
+            JSON.stringify(history)
+        );
+
+    }
 
 
     return (
         <div className="container d-flex justify-content-center mt-5">
 
-            <div className="card card-wrapper p-3" style={{ width: "400px" }}>
+            <div
+                className="card card-wrapper p-3"
+                style={{ width: "400px" }}
+            >
 
                 <div className="card-page">
 
@@ -75,7 +130,10 @@ function topup() {
                             <b>📥 {text.btn_top_up}</b>
                         </h4>
 
-                        <span>{text.enter_amount}</span>
+                        <span>
+                            {text.enter_amount}
+                        </span>
+
                     </div>
 
 
@@ -84,19 +142,85 @@ function topup() {
                         <label>
                             <b>{text.amount}:</b>
                         </label>
-                      {topupResult && (
-    <h4 className="mt-3">
-        Пополнено денег: {topupResult} ₽
-    </h4>
-)}
+
+
+                        {topupResult && (
+                            <h4 className="mt-3">
+
+                                Пополнено денег: {topupResult}{" "}
+
+                                {currency === "rub" && "₽"}
+
+                                {currency === "dollar" && "$"}
+
+                                {currency === "som" && "с"}
+
+                            </h4>
+                        )}
 
 
                         <input
                             type="number"
                             className="form-control"
                             placeholder={text.enter_amount}
-                            onChange={(e) => setNumber(e.target.value)}
+                            onChange={(e) =>
+                                setNumber(e.target.value)
+                            }
                         />
+
+
+                        <br />
+
+
+                        <label>
+
+                            <input
+                                onChange={() =>
+                                    setCurrency("dollar")
+                                }
+                                type="radio"
+                                name="currency"
+                            />
+
+                            Доллар $
+
+                        </label>
+
+
+                        <br />
+
+
+                        <label>
+
+                            <input
+                                onChange={() =>
+                                    setCurrency("rub")
+                                }
+                                type="radio"
+                                name="currency"
+                            />
+
+                            Рубль ₽
+
+                        </label>
+
+
+                        <br />
+
+
+                        <label>
+
+                            <input
+                                onChange={() =>
+                                    setCurrency("som")
+                                }
+                                type="radio"
+                                name="currency"
+                            />
+
+                            Сом с
+
+                        </label>
 
 
                         <button
@@ -107,13 +231,12 @@ function topup() {
                         </button>
 
 
-                       
-
-
                         <a href="/home">
+
                             <button className="btn btn-secondary col-12 mt-3">
                                 {text.btn_back}
                             </button>
+
                         </a>
 
                     </div>

@@ -20,6 +20,7 @@ export const language = [
         enter_amount: "Ведите сумму",
         history_t: "Последние транзакции",
         history_t1: "История пока пуста",
+        exchange: "Обмен",
     },
     {
         id: 2,
@@ -41,6 +42,7 @@ export const language = [
         amount: "Amount",
         enter_amount: "Enter amount",     
          history_t: "Last transaction",
+         exchange: "Exchange",
          history_t1: "History is currently empty",
     }
 ];

@@ -225,3 +225,44 @@ a {
 .language-button:hover {
     background-color: #f5f5f5;
 }
+
+.cards-slider {
+    width: 100%;
+    overflow: hidden;
+}
+
+.cards-container {
+    display: flex;
+
+    overflow-x: auto;
+
+    scroll-snap-type: x mandatory;
+
+    scroll-behavior: smooth;
+
+    scrollbar-width: none;
+}
+
+.cards-container::-webkit-scrollbar {
+    display: none;
+}
+
+
+.bank-card {
+    min-width: 100%;
+
+    scroll-snap-align: center;
+
+    padding: 0 5px;
+}
+
+.currency-table {
+    border-collapse: collapse; 
+    width: 100%; 
+}
+
+.currency-table td {
+    border: 1px solid #ccc;
+    padding: 10px; 
+    text-align: left; 
+}

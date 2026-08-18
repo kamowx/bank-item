@@ -11,6 +11,7 @@ import Balance from './screens/balance'
 import Withdraw from './screens/withdraw'
 import Topup from './screens/topup'
 import History from './screens/history'
+import Exchange from './screens/exchange'
 
 
 
@@ -35,6 +36,7 @@ function App() {
           <Route path="/withdraw" element={<Withdraw />} />
           <Route path="/topup" element={<Topup />} />
           <Route path="/history" element={<History />} />
+          <Route path="/exchange" element={<Exchange />} />
 
 
 

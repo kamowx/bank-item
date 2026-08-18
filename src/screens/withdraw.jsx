@@ -20,13 +20,54 @@ function Withdraw() {
 
     const [result, setResult] = useState("");
 
+    const [withdrawResult, setWithdrawResult] = useState("");
+
+
+    /* ВАЛЮТА */
+
+    const [currency, setCurrency] = useState("rub");
+
 
     /* СНЯТИЕ */
 
     function withdraw() {
 
+        if (Number(number) <= 0) {
+
+            alert("Введите сумму");
+
+            return;
+        }
+
+
+        /* ВЫБИРАЕМ СЧЁТ */
+
+        let key = "";
+
+
+        if (currency === "rub") {
+
+            key = "result_rub";
+
+        }
+
+        if (currency === "dollar") {
+
+            key = "result_dollar";
+
+        }
+
+        if (currency === "som") {
+
+            key = "result_sum";
+
+        }
+
+
+        /* ПОЛУЧАЕМ БАЛАНС */
+
         const oldResult = Number(
-            localStorage.getItem("result") || 0
+            localStorage.getItem(key) || 0
         );
 
 
@@ -44,9 +85,23 @@ function Withdraw() {
 
         const newResult = oldResult - Number(number);
 
+
         setResult(newResult);
 
-        localStorage.setItem("result", newResult);
+        localStorage.setItem(
+            key,
+            newResult
+        );
+
+
+        /* ПОСЛЕДНЕЕ СНЯТИЕ */
+
+        setWithdrawResult(number);
+
+        localStorage.setItem(
+            "withdrawResult",
+            number
+        );
 
 
         /* ИСТОРИЯ */
@@ -57,8 +112,13 @@ function Withdraw() {
 
 
         history.push({
+
             type: "Снятие",
-            amount: Number(number)
+
+            amount: Number(number),
+
+            currency: currency
+
         });
 
 
@@ -83,7 +143,9 @@ function Withdraw() {
                     <div className="card-header text-center p-4">
 
                         <h4>
-                            <b>📤 {text.btn_withdraw_money}</b>
+                            <b>
+                                📤 {text.btn_withdraw_money}
+                            </b>
                         </h4>
 
                         <span>
@@ -100,33 +162,115 @@ function Withdraw() {
                         </label>
 
 
+                        {/* ПОСЛЕДНЕЕ СНЯТИЕ */}
+
+                        {withdrawResult && (
+                            <h4 className="mt-3">
+
+                                Снято денег: {withdrawResult}{" "}
+
+                                {currency === "rub" && "₽"}
+
+                                {currency === "dollar" && "$"}
+
+                                {currency === "som" && "с"}
+
+                            </h4>
+                        )}
+
+
+                        {/* INPUT */}
+
                         <input
                             type="number"
                             className="form-control"
                             placeholder={text.enter_amount}
-                            onChange={(e) => setNumber(e.target.value)}
+                            onChange={(e) =>
+                                setNumber(e.target.value)
+                            }
                         />
 
 
-                        {result && (
-                            <h4 className="mt-3">
-                                Снято денег: {number} ₽
-                            </h4>
-                        )}
+                        <br />
 
+
+                        {/* ДОЛЛАР */}
+
+                        <label>
+
+                            <input
+                                onChange={() =>
+                                    setCurrency("dollar")
+                                }
+                                type="radio"
+                                name="currency"
+                            />
+
+                            Доллар $
+
+                        </label>
+
+
+                        <br />
+
+
+                        {/* РУБЛЬ */}
+
+                        <label>
+
+                            <input
+                                onChange={() =>
+                                    setCurrency("rub")
+                                }
+                                type="radio"
+                                name="currency"
+                            />
+
+                            Рубль ₽
+
+                        </label>
+
+
+                        <br />
+
+
+                        {/* СОМ */}
+
+                        <label>
+
+                            <input
+                                onChange={() =>
+                                    setCurrency("som")
+                                }
+                                type="radio"
+                                name="currency"
+                            />
+
+                            Сом с
+
+                        </label>
+
+
+                        {/* КНОПКА */}
 
                         <button
                             onClick={withdraw}
                             className="btn bg-danger text-white col-12 mt-3"
                         >
+
                             {text.btn_withdraw_money}
+
                         </button>
 
 
                         <a href="/home">
+
                             <button className="btn btn-secondary col-12 mt-3">
+
                                 {text.btn_back}
+
                             </button>
+
                         </a>
 
                     </div>

@@ -41,6 +41,7 @@ function Home() {
     const local = localStorage.getItem("id");
     const id = JSON.parse(local);
 
+
     const [user, setUser] = useState({});
 
 
@@ -66,16 +67,25 @@ function Home() {
 
 
     useEffect(() => {
+
         GetUser();
+
     }, []);
 
 
-    /*C*/
-    /* БАЛАНС */
+    /* БАЛАНСЫ */
 
-const [result, setResult] = useState(
-    localStorage.getItem("result") || ""
-);
+    const [result_r, setResult_r] = useState(
+        localStorage.getItem("result_rub") || 0
+    );
+
+    const [result_d, setResult_d] = useState(
+        localStorage.getItem("result_dollar") || 0
+    );
+
+    const [result_s, setResult_s] = useState(
+        localStorage.getItem("result_sum") || 0
+    );
 
 
     return (
@@ -115,61 +125,154 @@ const [result, setResult] = useState(
                     <div className="card-body">
 
 
-                        {/* БАЛАНС */}
+                        {/* БАЛАНСЫ */}
 
-                        <div className="balance mb-3 rounded-4 p-3 bg-primary text-white">
+                        <div className="cards-slider">
 
-                            <b>
-                                {text.balance_title}
-                            </b>
-
-                            <br />
+                            <div className="cards-container">
 
 
-                            <b className="balance-rub">
-                                {result}
-                            </b>
+                                {/* КАРТА 1 — РУБЛЬ */}
 
-                            <b className="balance-currency">
-                                ₽
-                            </b>
+                                <div className="bank-card">
+
+                                    <div className="balance rounded-4 p-3 bg-primary text-white">
+
+                                        <b>
+                                            {text.balance_title} №1
+                                        </b>
+
+                                        <br />
 
 
-                    
+                                        <b className="balance-rub">
+                                            {result_r}
+                                        </b>
 
-                          
+                                        <b className="balance-currency">
+                                            ₽
+                                        </b>
+
+                                    </div>
+
+                                </div>
+
+
+                                {/* КАРТА 2 — ДОЛЛАР */}
+
+                                <div className="bank-card">
+
+                                    <div className="balance rounded-4 p-3 bg-primary text-white">
+
+                                        <b>
+                                            {text.balance_title} №2
+                                        </b>
+
+                                        <br />
+
+
+                                        <b className="balance-rub">
+                                            {result_d}
+                                        </b>
+
+                                        <b className="balance-currency">
+                                            $
+                                        </b>
+
+                                    </div>
+
+                                </div>
+
+
+                                {/* КАРТА 3 — СОМ */}
+
+                                <div className="bank-card">
+
+                                    <div className="balance rounded-4 p-3 bg-primary text-white">
+
+                                        <b>
+                                            {text.balance_title} №3
+                                        </b>
+
+                                        <br />
+
+
+                                        <b className="balance-rub">
+                                            {result_s}
+                                        </b>
+
+                                        <b className="balance-currency">
+                                            с
+                                        </b>
+
+                                    </div>
+
+                                </div>
+
+
+                            </div>
 
                         </div>
 
 
+                        <br />
+                        <br />
+
+
                         {/* КНОПКИ */}
 
-                       <a href="/balance"> <button className="btn btn-primary col-12 mb-2">
+                        <a href="/balance">
 
-                            💰 {text.lbl_check_balance}
+                            <button className="btn btn-primary col-12 mb-2">
 
-                        </button></a>
+                                💰 {text.lbl_check_balance}
 
+                            </button>
 
-                       <a href="withdraw"> <button className="btn btn-primary col-12 mb-2">
-
-                            💸 {text.btn_withdraw_money}
-
-                        </button></a>
+                        </a>
 
 
-                    <a href="/topup">  <button className="btn btn-primary col-12 mb-2">
+                        <a href="/withdraw">
 
-                            💳 {text.btn_top_up}
+                            <button className="btn btn-primary col-12 mb-2">
 
-                        </button></a>  
+                                💸 {text.btn_withdraw_money}
+
+                            </button>
+
+                        </a>
 
 
-                       <a href="/history"> <button className="btn btn-primary col-12 mb-2">
+                        <a href="/topup">
 
-                            📜 {text.btn_history}
+                            <button className="btn btn-primary col-12 mb-2">
 
-                        </button></a>
+                                💳 {text.btn_top_up}
+
+                            </button>
+
+                        </a>
+
+                          <a href="/exchange">
+
+                            <button className="btn btn-primary col-12 mb-2">
+
+                                💱 {text.exchange}
+
+                            </button>
+
+                        </a>
+
+
+                        <a href="/history">
+
+                            <button className="btn btn-primary col-12 mb-2">
+
+                                📜 {text.btn_history}
+
+                            </button>
+
+                        </a>
 
 
                         <br />
@@ -179,8 +282,11 @@ const [result, setResult] = useState(
                             onClick={LogOut}
                             className="btn btn-primary col-12 mb-2"
                         >
+
                             LogOut
+
                         </button>
+
 
                     </div>
 
@@ -191,6 +297,7 @@ const [result, setResult] = useState(
         </div>
 
     );
+
 }
 
 export default Home;
