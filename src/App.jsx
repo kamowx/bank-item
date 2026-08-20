@@ -12,6 +12,7 @@ import Withdraw from './screens/withdraw'
 import Topup from './screens/topup'
 import History from './screens/history'
 import Exchange from './screens/exchange'
+import Changepassword from './screens/changepassword'
 
 
 
@@ -37,6 +38,7 @@ function App() {
           <Route path="/topup" element={<Topup />} />
           <Route path="/history" element={<History />} />
           <Route path="/exchange" element={<Exchange />} />
+          <Route path="/changepassword" element={<Changepassword />} />
 
 
 

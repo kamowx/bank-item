@@ -7,6 +7,10 @@ function Home() {
     const LogOut = () => {
 
         localStorage.removeItem("id");
+        localStorage.removeItem("result_sum");
+        localStorage.removeItem("result_dollar");
+        localStorage.removeItem("result_rub");
+        localStorage.removeItem("history");
 
         window.location.href = "/";
     };
@@ -49,7 +53,11 @@ function Home() {
 
     function GetUser() {
 
-        const user = users.find(
+        const localUsers = JSON.parse(
+            localStorage.getItem("users")
+        ) || users;
+
+        const user = localUsers.find(
             (user) => user.id === id
         );
 
@@ -64,7 +72,6 @@ function Home() {
 
         setUser(user);
     }
-
 
     useEffect(() => {
 
@@ -253,7 +260,7 @@ function Home() {
 
                         </a>
 
-                          <a href="/exchange">
+                        <a href="/exchange">
 
                             <button className="btn btn-primary col-12 mb-2">
 
@@ -269,6 +276,17 @@ function Home() {
                             <button className="btn btn-primary col-12 mb-2">
 
                                 📜 {text.btn_history}
+
+                            </button>
+
+                        </a>
+
+
+                        <a href="/changepassword">
+
+                            <button className="btn btn-primary col-12 mb-2">
+
+                                Change Password
 
                             </button>
 
