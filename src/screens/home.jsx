@@ -1,321 +1,198 @@
 import { useEffect, useState } from "react";
-import { users } from "../data/users";
+import { Link, useNavigate } from "react-router-dom";
+import { users as defaultUsers } from "../data/users";
 import { language } from "../data/language";
 
 function Home() {
+  const navigate = useNavigate();
 
-    const LogOut = () => {
+  /* ЯЗЫК */
 
-        localStorage.removeItem("id");
-        localStorage.removeItem("result_sum");
-        localStorage.removeItem("result_dollar");
-        localStorage.removeItem("result_rub");
-        localStorage.removeItem("history");
+  const [lang] = useState(Number(localStorage.getItem("language")) || 1);
 
-        window.location.href = "/";
-    };
+  const text = language.find((item) => item.id === lang) || language[0];
 
+  /* ПОЛУЧАЕМ ID ПОЛЬЗОВАТЕЛЯ */
 
-    /* ЯЗЫК */
+  const id = JSON.parse(localStorage.getItem("id"));
 
-    const [lang, setLang] = useState(
-        Number(localStorage.getItem("language")) || 1
-    );
+  /* ПОЛУЧАЕМ ПОЛЬЗОВАТЕЛЯ */
 
-    const text = language.find(
-        (item) => item.id === lang
-    );
+  const [user] = useState(() => {
+    try {
+      const localId = localStorage.getItem("id");
 
+      if (!localId) {
+        return null;
+      }
 
-    /* ПРОВЕРКА ВХОДА */
+      const id = JSON.parse(localId);
 
-    useEffect(() => {
+      const storedUsers = localStorage.getItem("users");
 
-        const id = localStorage.getItem("id");
+      const localUsers = storedUsers ? JSON.parse(storedUsers) : defaultUsers;
 
-        if (!id) {
-            window.location.href = "/";
-        }
-
-    }, []);
-
-
-    /* ПОЛУЧАЕМ ID */
-
-    const local = localStorage.getItem("id");
-    const id = JSON.parse(local);
-
-
-    const [user, setUser] = useState({});
-
-
-    /* ПОЛУЧАЕМ ПОЛЬЗОВАТЕЛЯ */
-
-    function GetUser() {
-
-        const localUsers = JSON.parse(
-            localStorage.getItem("users")
-        ) || users;
-
-        const user = localUsers.find(
-            (user) => user.id === id
-        );
-
-        if (user === undefined || user === null) {
-
-            window.location.href = "/";
-
-            return;
-        }
-
-        console.log(user);
-
-        setUser(user);
+      return localUsers.find((user) => user.id === id) || null;
+    } catch {
+      return null;
     }
+  });
 
-    useEffect(() => {
+  /* ПРОВЕРКА ВХОДА */
 
-        GetUser();
+  useEffect(() => {
+    if (!user) {
+      navigate("/");
+    }
+  }, [user, navigate]);
 
-    }, []);
+  /* ВЫХОД */
 
+  const handleLogOut = () => {
+    /*
+      УДАЛЯЕМ ТОЛЬКО ID
 
-    /* БАЛАНСЫ */
+      Деньги и история остаются
+    */
 
-    const [result_r, setResult_r] = useState(
-        localStorage.getItem("result_rub") || 0
-    );
+    localStorage.removeItem("id");
 
-    const [result_d, setResult_d] = useState(
-        localStorage.getItem("result_dollar") || 0
-    );
+    navigate("/");
+  };
 
-    const [result_s, setResult_s] = useState(
-        localStorage.getItem("result_sum") || 0
-    );
+  /* БАЛАНСЫ */
 
+  const [result_r] = useState(
+    Number(localStorage.getItem("result_rub_" + id)) || 0
+  );
 
-    return (
+  const [result_d] = useState(
+    Number(localStorage.getItem("result_dollar_" + id)) || 0
+  );
 
-        <div className="container d-flex justify-content-center mt-5">
+  const [result_s] = useState(
+    Number(localStorage.getItem("result_sum_" + id)) || 0
+  );
 
-            <div
-                className="card card-wrapper p-3"
-                style={{ width: "400px" }}
-            >
+  /* ЕСЛИ ПОЛЬЗОВАТЕЛЯ НЕТ */
 
-                {/* Главное меню */}
+  if (!user) {
+    return null;
+  }
 
-                <div className="card-page">
+  return (
+    <div className="container d-flex justify-content-center mt-5">
+      <div className="card card-wrapper p-3" style={{ width: "400px" }}>
+        <div className="card-page">
+          {/* ГЛАВНОЕ МЕНЮ */}
 
-                    <div className="card-header text-center p-4">
+          <div className="card-header text-center p-4">
+            <h4>
+              <b>{text.menu_title}</b>
+            </h4>
 
-                        <h4>
-                            <b>
-                                {text.menu_title}
-                            </b>
-                        </h4>
+            <p>
+              {text.name_title}: {user.name}
+            </p>
 
+            <span>{text.operation_header}</span>
+          </div>
 
-                        <p>
-                            {text.name_title}: {user.name}
-                        </p>
+          <div className="card-body">
+            {/* БАЛАНСЫ */}
 
+            <div className="cards-slider">
+              <div className="cards-container">
+                {/* КАРТА 1 — РУБЛЬ */}
 
-                        <span>
-                            {text.operation_header}
-                        </span>
+                <div className="bank-card">
+                  <div className="balance rounded-4 p-3 bg-primary text-white">
+                    <b>{text.balance_title} №1</b>
 
-                    </div>
+                    <br />
 
+                    <b className="balance-rub">{result_r}</b>
 
-                    <div className="card-body">
-
-
-                        {/* БАЛАНСЫ */}
-
-                        <div className="cards-slider">
-
-                            <div className="cards-container">
-
-
-                                {/* КАРТА 1 — РУБЛЬ */}
-
-                                <div className="bank-card">
-
-                                    <div className="balance rounded-4 p-3 bg-primary text-white">
-
-                                        <b>
-                                            {text.balance_title} №1
-                                        </b>
-
-                                        <br />
-
-
-                                        <b className="balance-rub">
-                                            {result_r}
-                                        </b>
-
-                                        <b className="balance-currency">
-                                            ₽
-                                        </b>
-
-                                    </div>
-
-                                </div>
-
-
-                                {/* КАРТА 2 — ДОЛЛАР */}
-
-                                <div className="bank-card">
-
-                                    <div className="balance rounded-4 p-3 bg-primary text-white">
-
-                                        <b>
-                                            {text.balance_title} №2
-                                        </b>
-
-                                        <br />
-
-
-                                        <b className="balance-rub">
-                                            {result_d}
-                                        </b>
-
-                                        <b className="balance-currency">
-                                            $
-                                        </b>
-
-                                    </div>
-
-                                </div>
-
-
-                                {/* КАРТА 3 — СОМ */}
-
-                                <div className="bank-card">
-
-                                    <div className="balance rounded-4 p-3 bg-primary text-white">
-
-                                        <b>
-                                            {text.balance_title} №3
-                                        </b>
-
-                                        <br />
-
-
-                                        <b className="balance-rub">
-                                            {result_s}
-                                        </b>
-
-                                        <b className="balance-currency">
-                                            с
-                                        </b>
-
-                                    </div>
-
-                                </div>
-
-
-                            </div>
-
-                        </div>
-
-
-                        <br />
-                        <br />
-
-
-                        {/* КНОПКИ */}
-
-                        <a href="/balance">
-
-                            <button className="btn btn-primary col-12 mb-2">
-
-                                💰 {text.lbl_check_balance}
-
-                            </button>
-
-                        </a>
-
-
-                        <a href="/withdraw">
-
-                            <button className="btn btn-primary col-12 mb-2">
-
-                                💸 {text.btn_withdraw_money}
-
-                            </button>
-
-                        </a>
-
-
-                        <a href="/topup">
-
-                            <button className="btn btn-primary col-12 mb-2">
-
-                                💳 {text.btn_top_up}
-
-                            </button>
-
-                        </a>
-
-                        <a href="/exchange">
-
-                            <button className="btn btn-primary col-12 mb-2">
-
-                                💱 {text.exchange}
-
-                            </button>
-
-                        </a>
-
-
-                        <a href="/history">
-
-                            <button className="btn btn-primary col-12 mb-2">
-
-                                📜 {text.btn_history}
-
-                            </button>
-
-                        </a>
-
-
-                        <a href="/changepassword">
-
-                            <button className="btn btn-primary col-12 mb-2">
-
-                                Change Password
-
-                            </button>
-
-                        </a>
-
-
-                        <br />
-
-
-                        <button
-                            onClick={LogOut}
-                            className="btn btn-primary col-12 mb-2"
-                        >
-
-                            LogOut
-
-                        </button>
-
-
-                    </div>
-
+                    <b className="balance-currency">₽</b>
+                  </div>
                 </div>
 
+                {/* КАРТА 2 — ДОЛЛАР */}
+
+                <div className="bank-card">
+                  <div className="balance rounded-4 p-3 bg-primary text-white">
+                    <b>{text.balance_title} №2</b>
+
+                    <br />
+
+                    <b className="balance-rub">{result_d}</b>
+
+                    <b className="balance-currency">$</b>
+                  </div>
+                </div>
+
+                {/* КАРТА 3 — СОМ */}
+
+                <div className="bank-card">
+                  <div className="balance rounded-4 p-3 bg-primary text-white">
+                    <b>{text.balance_title} №3</b>
+
+                    <br />
+
+                    <b className="balance-rub">{result_s}</b>
+
+                    <b className="balance-currency">с</b>
+                  </div>
+                </div>
+              </div>
             </div>
 
+            <br />
+            <br />
+
+            {/* КНОПКИ */}
+
+            <Link to="/balance" className="btn btn-primary col-12 mb-2">
+              💰 {text.lbl_check_balance}
+            </Link>
+
+            <Link to="/withdraw" className="btn btn-primary col-12 mb-2">
+              💸 {text.btn_withdraw_money}
+            </Link>
+
+            <Link to="/topup" className="btn btn-primary col-12 mb-2">
+              💳 {text.btn_top_up}
+            </Link>
+
+            <Link to="/exchange" className="btn btn-primary col-12 mb-2">
+              💱 {text.exchange}
+            </Link>
+
+            <Link to="/history" className="btn btn-primary col-12 mb-2">
+              📜 {text.btn_history}
+            </Link>
+
+            <Link to="/changepassword" className="btn btn-primary col-12 mb-2">
+              🔐
+              {lang === 1 ? " Смена пароля" : " Change Password"}
+            </Link>
+
+            <br />
+
+            {/* ВЫХОД */}
+
+            <button
+              onClick={handleLogOut}
+              className="btn btn-danger col-12 mb-2"
+            >
+              🚪
+              {lang === 1 ? " Выйти" : " Log Out"}
+            </button>
+          </div>
         </div>
-
-    );
-
+      </div>
+    </div>
+  );
 }
 
 export default Home;
