@@ -1,8 +1,12 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { language } from "../data/language";
+import axios from "axios";
 
 function Exchange() {
   /* ЯЗЫК */
+  const [users, setUsers] = useState([]);
+  const [user, setUser] = useState(null);
+  const [data, setData] = useState([]);
 
   const [lang, setLang] = useState(
     Number(localStorage.getItem("language")) || 1
@@ -10,21 +14,86 @@ function Exchange() {
 
   const text = language.find((item) => item.id === lang);
 
-  /* БАЛАНСЫ */
+  /* ID ПОЛЬЗОВАТЕЛЯ */
 
-  const [result_r, setResult_r] = useState(
-    Number(localStorage.getItem("result_rub")) || 0
-  );
+  const id = JSON.parse(localStorage.getItem("id"));
 
-  const [result_d, setResult_d] = useState(
-    Number(localStorage.getItem("result_dollar")) || 0
-  );
+  // Получения GET
+  const allUser = async () => {
+    try {
+      const response = await axios({
+        method: "GET",
+        url: "https://6aae654c606bd915d110c57c.mockapi.io/data",
+      });
 
-  const [result_s, setResult_s] = useState(
-    Number(localStorage.getItem("result_sum")) || 0
-  );
+      console.log("GET", response);
 
-  /* СУММЫ */
+      if (response.status === 200) {
+        setUsers(response.data);
+
+        /* НАХОДИМ ТЕКУЩЕГО ПОЛЬЗОВАТЕЛЯ */
+
+        const currentUser = response.data.find((item) => item.id == id);
+
+        setUser(currentUser);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  useEffect(() => {
+    allUser();
+  }, []);
+
+  /* 
+     ПОЛУЧАЕМ ИСТОРИЮ
+   */
+
+  const getHistory = async () => {
+    try {
+      const response = await axios({
+        method: "GET",
+        url: "https://6aae654c606bd915d110c57c.mockapi.io/history",
+      });
+
+      console.log("GET HISTORY", response);
+
+      if (response.status === 200) {
+        setData(response.data);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  useEffect(() => {
+    getHistory();
+  }, []);
+
+  /* 
+     БАЛАНСЫ
+   */
+
+  const [result_r, setResult_r] = useState(0);
+
+  const [result_d, setResult_d] = useState(0);
+
+  const [result_s, setResult_s] = useState(0);
+
+  /* ПОЛУЧАЕМ БАЛАНСЫ ИЗ MOCKAPI */
+
+  useEffect(() => {
+    if (user) {
+      setResult_r(Number(user.rub) || 0);
+      setResult_d(Number(user.usd) || 0);
+      setResult_s(Number(user.sum) || 0);
+    }
+  }, [user]);
+
+  /* 
+     СУММЫ
+*/
 
   const [numberRub, setNumberRub] = useState("");
 
@@ -32,10 +101,53 @@ function Exchange() {
 
   const [numberSom, setNumberSom] = useState("");
 
-  /* ₽ → СОМ */
+  /* 
+     СОХРАНЕНИЕ ИСТОРИИ
+ */
 
-  function rubSom() {
+  const saveHistory = async (number, type, currency) => {
+    if (!user) {
+      return;
+    }
+
+    try {
+      const response = await axios({
+        method: "POST",
+        url: "https://6aae654c606bd915d110c57c.mockapi.io/history",
+        data: {
+          number: number,
+          userId: user.id,
+          type: type,
+          currency: currency,
+        },
+      });
+
+      console.log("POST HISTORY", response);
+
+      if (response.status === 201 || response.status === 200) {
+        getHistory();
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  /* 
+     ₽ → СОМ
+ */
+
+  async function rubSom() {
     const number = Number(numberRub);
+
+    if (number <= 0) {
+      alert("Введите сумму");
+      return;
+    }
+
+    if (!user) {
+      alert("Пользователь не найден");
+      return;
+    }
 
     if (number > result_r) {
       alert("Недостаточно рублей");
@@ -47,21 +159,51 @@ function Exchange() {
 
     const newSom = result_s + number * 1.03;
 
-    setResult_r(newRub);
+    try {
+      const response = await axios({
+        method: "PUT",
+        url: `https://6aae654c606bd915d110c57c.mockapi.io/data/${user.id}`,
+        data: {
+          rub: newRub,
+          sum: newSom,
+        },
+      });
 
-    setResult_s(newSom);
+      console.log("PUT", response);
 
-    localStorage.setItem("result_rub", newRub);
+      if (response.status === 200) {
+        setResult_r(newRub);
+        setResult_s(newSom);
 
-    localStorage.setItem("result_sum", newSom);
+        setNumberRub("");
 
-    alert("Обмен выполнен");
+        await allUser();
+
+        await saveHistory(number, "Обмен ₽ → Сом", "RUB → KGS");
+
+        alert("Обмен выполнен");
+      }
+    } catch (error) {
+      console.error(error);
+    }
   }
 
-  /* ₽ → ДОЛЛАР */
+  /* 
+     ₽ → ДОЛЛАР
+ */
 
-  function rubDollar() {
+  async function rubDollar() {
     const number = Number(numberRub);
+
+    if (number <= 0) {
+      alert("Введите сумму");
+      return;
+    }
+
+    if (!user) {
+      alert("Пользователь не найден");
+      return;
+    }
 
     if (number > result_r) {
       alert("Недостаточно рублей");
@@ -73,21 +215,51 @@ function Exchange() {
 
     const newDollar = result_d + number * 0.012;
 
-    setResult_r(newRub);
+    try {
+      const response = await axios({
+        method: "PUT",
+        url: `https://6aae654c606bd915d110c57c.mockapi.io/data/${user.id}`,
+        data: {
+          rub: newRub,
+          usd: newDollar,
+        },
+      });
 
-    setResult_d(newDollar);
+      console.log("PUT", response);
 
-    localStorage.setItem("result_rub", newRub);
+      if (response.status === 200) {
+        setResult_r(newRub);
+        setResult_d(newDollar);
 
-    localStorage.setItem("result_dollar", newDollar);
+        setNumberRub("");
 
-    alert("Обмен выполнен");
+        await allUser();
+
+        await saveHistory(number, "Обмен ₽ → $", "RUB → USD");
+
+        alert("Обмен выполнен");
+      }
+    } catch (error) {
+      console.error(error);
+    }
   }
 
-  /* $ → СОМ */
+  /* 
+     $ → СОМ
+  */
 
-  function dollarSom() {
+  async function dollarSom() {
     const number = Number(numberDollar);
+
+    if (number <= 0) {
+      alert("Введите сумму");
+      return;
+    }
+
+    if (!user) {
+      alert("Пользователь не найден");
+      return;
+    }
 
     if (number > result_d) {
       alert("Недостаточно долларов");
@@ -99,21 +271,51 @@ function Exchange() {
 
     const newSom = result_s + number * 87.45;
 
-    setResult_d(newDollar);
+    try {
+      const response = await axios({
+        method: "PUT",
+        url: `https://6aae654c606bd915d110c57c.mockapi.io/data/${user.id}`,
+        data: {
+          usd: newDollar,
+          sum: newSom,
+        },
+      });
 
-    setResult_s(newSom);
+      console.log("PUT", response);
 
-    localStorage.setItem("result_dollar", newDollar);
+      if (response.status === 200) {
+        setResult_d(newDollar);
+        setResult_s(newSom);
 
-    localStorage.setItem("result_sum", newSom);
+        setNumberDollar("");
 
-    alert("Обмен выполнен");
+        await allUser();
+
+        await saveHistory(number, "Обмен $ → Сом", "USD → KGS");
+
+        alert("Обмен выполнен");
+      }
+    } catch (error) {
+      console.error(error);
+    }
   }
 
-  /* $ → ₽ */
+  /* 
+     $ → ₽
+*/
 
-  function dollarRub() {
+  async function dollarRub() {
     const number = Number(numberDollar);
+
+    if (number <= 0) {
+      alert("Введите сумму");
+      return;
+    }
+
+    if (!user) {
+      alert("Пользователь не найден");
+      return;
+    }
 
     if (number > result_d) {
       alert("Недостаточно долларов");
@@ -125,21 +327,51 @@ function Exchange() {
 
     const newRub = result_r + number * 84.95;
 
-    setResult_d(newDollar);
+    try {
+      const response = await axios({
+        method: "PUT",
+        url: `https://6aae654c606bd915d110c57c.mockapi.io/data/${user.id}`,
+        data: {
+          usd: newDollar,
+          rub: newRub,
+        },
+      });
 
-    setResult_r(newRub);
+      console.log("PUT", response);
 
-    localStorage.setItem("result_dollar", newDollar);
+      if (response.status === 200) {
+        setResult_d(newDollar);
+        setResult_r(newRub);
 
-    localStorage.setItem("result_rub", newRub);
+        setNumberDollar("");
 
-    alert("Обмен выполнен");
+        await allUser();
+
+        await saveHistory(number, "Обмен $ → ₽", "USD → RUB");
+
+        alert("Обмен выполнен");
+      }
+    } catch (error) {
+      console.error(error);
+    }
   }
 
-  /* СОМ → ₽ */
+  /*
+     СОМ → ₽
+ */
 
-  function somRub() {
+  async function somRub() {
     const number = Number(numberSom);
+
+    if (number <= 0) {
+      alert("Введите сумму");
+      return;
+    }
+
+    if (!user) {
+      alert("Пользователь не найден");
+      return;
+    }
 
     if (number > result_s) {
       alert("Недостаточно сомов");
@@ -151,21 +383,51 @@ function Exchange() {
 
     const newRub = result_r + number * 0.97;
 
-    setResult_s(newSom);
+    try {
+      const response = await axios({
+        method: "PUT",
+        url: `https://6aae654c606bd915d110c57c.mockapi.io/data/${user.id}`,
+        data: {
+          sum: newSom,
+          rub: newRub,
+        },
+      });
 
-    setResult_r(newRub);
+      console.log("PUT", response);
 
-    localStorage.setItem("result_sum", newSom);
+      if (response.status === 200) {
+        setResult_s(newSom);
+        setResult_r(newRub);
 
-    localStorage.setItem("result_rub", newRub);
+        setNumberSom("");
 
-    alert("Обмен выполнен");
+        await allUser();
+
+        await saveHistory(number, "Обмен Сом → ₽", "KGS → RUB");
+
+        alert("Обмен выполнен");
+      }
+    } catch (error) {
+      console.error(error);
+    }
   }
 
-  /* СОМ → $ */
+  /* 
+     СОМ → $
+*/
 
-  function somDollar() {
+  async function somDollar() {
     const number = Number(numberSom);
+
+    if (number <= 0) {
+      alert("Введите сумму");
+      return;
+    }
+
+    if (!user) {
+      alert("Пользователь не найден");
+      return;
+    }
 
     if (number > result_s) {
       alert("Недостаточно сомов");
@@ -177,15 +439,33 @@ function Exchange() {
 
     const newDollar = result_d + number * 0.011;
 
-    setResult_s(newSom);
+    try {
+      const response = await axios({
+        method: "PUT",
+        url: `https://6aae654c606bd915d110c57c.mockapi.io/data/${user.id}`,
+        data: {
+          sum: newSom,
+          usd: newDollar,
+        },
+      });
 
-    setResult_d(newDollar);
+      console.log("PUT", response);
 
-    localStorage.setItem("result_sum", newSom);
+      if (response.status === 200) {
+        setResult_s(newSom);
+        setResult_d(newDollar);
 
-    localStorage.setItem("result_dollar", newDollar);
+        setNumberSom("");
 
-    alert("Обмен выполнен");
+        await allUser();
+
+        await saveHistory(number, "Обмен Сом → $", "KGS → USD");
+
+        alert("Обмен выполнен");
+      }
+    } catch (error) {
+      console.error(error);
+    }
   }
 
   return (
@@ -263,6 +543,7 @@ function Exchange() {
                       type="number"
                       className="form-control mt-2"
                       placeholder="Введите сумму ₽"
+                      value={numberRub}
                       onChange={(e) => setNumberRub(e.target.value)}
                     />
 
@@ -298,6 +579,7 @@ function Exchange() {
                       type="number"
                       className="form-control mt-2"
                       placeholder="Введите сумму $"
+                      value={numberDollar}
                       onChange={(e) => setNumberDollar(e.target.value)}
                     />
 
@@ -333,6 +615,7 @@ function Exchange() {
                       type="number"
                       className="form-control mt-2"
                       placeholder="Введите сумму сом"
+                      value={numberSom}
                       onChange={(e) => setNumberSom(e.target.value)}
                     />
 

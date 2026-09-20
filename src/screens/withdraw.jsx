@@ -1,24 +1,23 @@
-import { useState } from "react";
+import axios from "axios";
+import { useEffect, useState } from "react";
 import { language } from "../data/language";
 
 function Withdraw() {
   /* ЯЗЫК */
 
+  const [data, setData] = useState([]);
+
   const [lang, setLang] = useState(
     Number(localStorage.getItem("language")) || 1
   );
+  const [users, setUsers] = useState([]);
+  const [user, setUser] = useState(null);
 
   const text = language.find((item) => item.id === lang);
-
-  /* ID ПОЛЬЗОВАТЕЛЯ */
-
-  const id = JSON.parse(localStorage.getItem("id"));
 
   /* СУММА */
 
   const [number, setNumber] = useState("");
-
-  const [result, setResult] = useState("");
 
   const [withdrawResult, setWithdrawResult] = useState("");
 
@@ -26,13 +25,49 @@ function Withdraw() {
 
   const [currency, setCurrency] = useState("rub");
 
-  /* СНЯТИЕ */
+  /* ID ПОЛЬЗОВАТЕЛЯ */
+
+  const id = JSON.parse(localStorage.getItem("id"));
+
+  //Получения getItem
+  const allUser = async () => {
+    try {
+      const response = await axios({
+        method: "GET",
+        url: "https://6aae654c606bd915d110c57c.mockapi.io/data",
+      });
+
+      console.log("GET", response);
+
+      if (response.status === 200) {
+        setUsers(response.data);
+
+        /* НАХОДИМ ТЕКУЩЕГО ПОЛЬЗОВАТЕЛЯ */
+
+        const currentUser = response.data.find((item) => item.id == id);
+
+        setUser(currentUser);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  useEffect(() => {
+    allUser();
+  }, []);
+
+  /* ПОПОЛНЕНИЕ */
 
   function withdraw() {
-    /* ПРОВЕРКА СУММЫ */
-
     if (Number(number) <= 0) {
       alert("Введите сумму");
+
+      return;
+    }
+
+    if (!user) {
+      alert("Пользователь не найден");
 
       return;
     }
@@ -42,58 +77,103 @@ function Withdraw() {
     let key = "";
 
     if (currency === "rub") {
-      key = "result_rub_" + id;
+      key = "rub";
     }
 
     if (currency === "dollar") {
-      key = "result_dollar_" + id;
+      key = "usd";
     }
 
     if (currency === "som") {
-      key = "result_sum_" + id;
+      key = "sum";
     }
 
-    /* ПОЛУЧАЕМ БАЛАНС */
+    /* СТАРЫЙ БАЛАНС */
 
-    const oldResult = Number(localStorage.getItem(key) || 0);
-
-    /* ПРОВЕРКА БАЛАНСА */
-
-    if (Number(number) > oldResult) {
-      alert("Недостаточно денег");
-
-      return;
-    }
+    const oldBalance = Number(user[key]) || 0;
 
     /* НОВЫЙ БАЛАНС */
 
-    const newResult = oldResult - Number(number);
+    const newBalance = oldBalance - Number(number);
 
-    setResult(newResult);
+    /* СОХРАНЯЕМ БАЛАНС */
 
-    localStorage.setItem(key, newResult);
+    //Save и setItem
+    const saveTopup = async () => {
+      if (!number.trim()) return;
 
-    /* ПОСЛЕДНЕЕ СНЯТИЕ */
+      try {
+        const responce = await axios({
+          method: "PUT",
+          url: `https://6aae654c606bd915d110c57c.mockapi.io/data/${user.id}`,
+          data: {
+            [key]: newBalance,
+          },
+        });
 
-    setWithdrawResult(number);
+        console.log("PUT", responce);
 
-    localStorage.setItem("withdrawResult_" + id, number);
+        if (responce.status === 200) {
+          setWithdrawResult(number);
+          setNumber("");
+
+          allUser();
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    saveTopup();
 
     /* ИСТОРИЯ */
 
-    const history = JSON.parse(localStorage.getItem("history_" + id) || "[]");
+    //Получения getItem
+    const getHistory = async () => {
+      try {
+        const response = await axios({
+          method: "GET",
+          url: "https://6aae654c606bd915d110c57c.mockapi.io/history",
+        });
 
-    history.push({
-      type: "Снятие",
+        console.log("GET", response);
 
-      amount: Number(number),
+        if (response.status === 200) {
+          setData(response.data);
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    };
 
-      currency: currency,
-    });
+    //Save и setItem
+    const saveHistory = async () => {
+      if (!number.trim()) return;
 
-    localStorage.setItem("history_" + id, JSON.stringify(history));
+      try {
+        const responce = await axios({
+          method: "POST",
+          url: "https://6aae654c606bd915d110c57c.mockapi.io/history",
+          data: {
+            number: number,
+            userId: user.id,
+            type: "Сняли",
+            currency: currency,
+          },
+        });
+
+        console.log("POST", responce);
+
+        if (responce.status === 201 || responce.status === 200) {
+          getHistory();
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    saveHistory();
   }
-
   return (
     <div className="container d-flex justify-content-center mt-5">
       <div className="card card-wrapper p-3" style={{ width: "400px" }}>

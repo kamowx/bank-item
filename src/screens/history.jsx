@@ -1,7 +1,15 @@
-import { useState } from "react";
+import axios from "axios";
+import { useEffect, useState } from "react";
 import { language } from "../data/language";
 
 function History() {
+  const [users, setUsers] = useState([]);
+  const [user, setUser] = useState(null);
+
+  /* ИСТОРИЯ */
+
+  const [data, setData] = useState([]);
+
   /* ЯЗЫК */
 
   const [lang, setLang] = useState(
@@ -14,9 +22,67 @@ function History() {
 
   const id = JSON.parse(localStorage.getItem("id"));
 
-  /* ПОЛУЧАЕМ ИСТОРИЮ */
+  // Получения GET
+  const allUser = async () => {
+    try {
+      const response = await axios({
+        method: "GET",
+        url: "https://6aae654c606bd915d110c57c.mockapi.io/data",
+      });
 
-  const history = JSON.parse(localStorage.getItem("history_" + id) || "[]");
+      console.log("GET", response);
+
+      if (response.status === 200) {
+        setUsers(response.data);
+
+        /* НАХОДИМ ТЕКУЩЕГО ПОЛЬЗОВАТЕЛЯ */
+
+        const currentUser = response.data.find((item) => item.id == id);
+
+        setUser(currentUser);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  useEffect(() => {
+    allUser();
+  }, []);
+
+  /* 
+     ИСТОРИЯ
+ */
+
+  // Получения GET
+  const getHistory = async () => {
+    try {
+      const response = await axios({
+        method: "GET",
+        url: "https://6aae654c606bd915d110c57c.mockapi.io/history",
+      });
+
+      console.log("GET HISTORY", response);
+
+      if (response.status === 200) {
+        setData(response.data);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  useEffect(() => {
+    getHistory();
+  }, []);
+
+  /*
+     ФИЛЬТР ИСТОРИИ
+ */
+
+  const history = data.filter((item) => {
+    return item.userId == user?.id;
+  });
 
   return (
     <div className="container d-flex justify-content-center mt-5">
@@ -40,9 +106,15 @@ function History() {
                 <div key={index} className="mb-3 p-3 border rounded">
                   <b>{item.type}</b>
                   <br />
-                  Сумма: {item.amount} {item.currency === "rub" && "₽"}
-                  {item.currency === "dollar" && "$"}
-                  {item.currency === "som" && "с"}
+                  Сумма: {item.number} {item.currency === "RUB" && "₽"}
+                  {item.currency === "USD" && "$"}
+                  {item.currency === "KGS" && "с"}
+                  {item.currency === "RUB → KGS" && "₽ → с"}
+                  {item.currency === "RUB → USD" && "₽ → $"}
+                  {item.currency === "USD → KGS" && "$ → с"}
+                  {item.currency === "USD → RUB" && "$ → ₽"}
+                  {item.currency === "KGS → RUB" && "с → ₽"}
+                  {item.currency === "KGS → USD" && "с → $"}
                 </div>
               ))}
 

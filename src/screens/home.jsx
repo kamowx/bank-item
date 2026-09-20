@@ -1,3 +1,4 @@
+import axios from "axios";
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { users as defaultUsers } from "../data/users";
@@ -5,80 +6,83 @@ import { language } from "../data/language";
 
 function Home() {
   const navigate = useNavigate();
+  const [data, setData] = useState([]);
 
   /* ЯЗЫК */
 
   const [lang] = useState(Number(localStorage.getItem("language")) || 1);
-
+  const [users, setUsers] = useState([]);
+  const [user, setUser] = useState(null);
   const text = language.find((item) => item.id === lang) || language[0];
 
   /* ПОЛУЧАЕМ ID ПОЛЬЗОВАТЕЛЯ */
-
-  const id = JSON.parse(localStorage.getItem("id"));
-
-  /* ПОЛУЧАЕМ ПОЛЬЗОВАТЕЛЯ */
-
-  const [user] = useState(() => {
+  //Получения getItem
+  const allUser = async () => {
     try {
-      const localId = localStorage.getItem("id");
+      const response = await axios({
+        method: "GET",
+        url: "https://6aae654c606bd915d110c57c.mockapi.io/data",
+      });
 
-      if (!localId) {
-        return null;
+      console.log("GET", response);
+
+      if (response.status === 200) {
+        setUsers(response.data);
+
+        const id = JSON.parse(localStorage.getItem("id"));
+
+        const currentUser = response.data.find((item) => item.id == id);
+
+        setUser(currentUser);
       }
-
-      const id = JSON.parse(localId);
-
-      const storedUsers = localStorage.getItem("users");
-
-      const localUsers = storedUsers ? JSON.parse(storedUsers) : defaultUsers;
-
-      return localUsers.find((user) => user.id === id) || null;
-    } catch {
-      return null;
+    } catch (error) {
+      console.error(error);
     }
-  });
-
-  /* ПРОВЕРКА ВХОДА */
+  };
 
   useEffect(() => {
-    if (!user) {
-      navigate("/");
-    }
-  }, [user, navigate]);
-
-  /* ВЫХОД */
-
-  const handleLogOut = () => {
-    /*
-      УДАЛЯЕМ ТОЛЬКО ID
-
-      Деньги и история остаются
-    */
-
-    localStorage.removeItem("id");
-
-    navigate("/");
-  };
+    allUser();
+  }, []);
 
   /* БАЛАНСЫ */
 
-  const [result_r] = useState(
-    Number(localStorage.getItem("result_rub_" + id)) || 0
-  );
+  //Получения getItem
+  const oldResult = async () => {
+    try {
+      const response = await axios({
+        method: "GET",
+        url: "https://6aae654c606bd915d110c57c.mockapi.io/data",
+      });
 
-  const [result_d] = useState(
-    Number(localStorage.getItem("result_dollar_" + id)) || 0
-  );
+      console.log("GET", response);
 
-  const [result_s] = useState(
-    Number(localStorage.getItem("result_sum_" + id)) || 0
-  );
+      if (response.status === 200) {
+        setData(response.data);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  useEffect(() => {
+    oldResult();
+  }, []);
 
   /* ЕСЛИ ПОЛЬЗОВАТЕЛЯ НЕТ */
 
   if (!user) {
     return null;
   }
+
+  const resultRub = Number(user.rub) || 0;
+  const resultUsd = Number(user.usd) || 0;
+  const resultSum = Number(user.sum) || 0;
+
+  const handleLogOut = () => {
+    localStorage.removeItem("id");
+
+    navigate("/");
+  };
 
   return (
     <div className="container d-flex justify-content-center mt-5">
@@ -92,7 +96,7 @@ function Home() {
             </h4>
 
             <p>
-              {text.name_title}: {user.name}
+              {text.name_title}: {user.email}
             </p>
 
             <span>{text.operation_header}</span>
@@ -111,7 +115,7 @@ function Home() {
 
                     <br />
 
-                    <b className="balance-rub">{result_r}</b>
+                    <b className="balance-rub">{resultRub}</b>
 
                     <b className="balance-currency">₽</b>
                   </div>
@@ -125,7 +129,7 @@ function Home() {
 
                     <br />
 
-                    <b className="balance-rub">{result_d}</b>
+                    <b className="balance-rub">{resultUsd}</b>
 
                     <b className="balance-currency">$</b>
                   </div>
@@ -139,7 +143,7 @@ function Home() {
 
                     <br />
 
-                    <b className="balance-rub">{result_s}</b>
+                    <b className="balance-rub">{resultSum}</b>
 
                     <b className="balance-currency">с</b>
                   </div>
