@@ -3,10 +3,20 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { users as defaultUsers } from "../data/users";
 import { language } from "../data/language";
+import Bottombar from "../components/bottombar";
+import Fastbar from "../components/fastbar";
 
 function Home() {
   const navigate = useNavigate();
   const [data, setData] = useState([]);
+
+  useEffect(() => {
+    const id = localStorage.getItem("id");
+
+    if (!id) {
+      navigate("/");
+    }
+  }, [navigate]);
 
   /* ЯЗЫК */
 
@@ -31,7 +41,11 @@ function Home() {
 
         const id = JSON.parse(localStorage.getItem("id"));
 
+        console.log("ID из localStorage:", id);
+
         const currentUser = response.data.find((item) => item.id == id);
+
+        console.log("Текущий пользователь:", currentUser);
 
         setUser(currentUser);
       }
@@ -85,114 +99,194 @@ function Home() {
   };
 
   return (
-    <div className="container d-flex justify-content-center mt-5">
-      <div className="card card-wrapper p-3" style={{ width: "400px" }}>
-        <div className="card-page">
-          {/* ГЛАВНОЕ МЕНЮ */}
+    <div className="app">
+      <div className="onboarding home-onboarding">
+        <div className="home-page">
+          <div className="home-header">
+            <div className="home-logo">
+              <div className="logo-icon">
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
 
-          <div className="card-header text-center p-4">
-            <h4>
-              <b>{text.menu_title}</b>
-            </h4>
+              <a href="/home" className="i1">
+                <div className="logo-text">EasyPay</div>
+              </a>
+            </div>
+            <div className="home-user">
+              <div className="home-user-name">
+                {user?.firstname} {user?.lastname}
+              </div>
 
-            <p>
-              {text.name_title}: {user.email}
-            </p>
-
-            <span>{text.operation_header}</span>
+              <div className="home-user-text">Добро пожаловать</div>
+            </div>
+            <a href="/history" className="i1">
+              <button className="home-notification">
+                <i className="fa-regular fa-bell"></i>
+              </button>
+            </a>{" "}
           </div>
 
-          <div className="card-body">
-            {/* БАЛАНСЫ */}
+          <div className="home-content">
+            {/* Заголовок */}
+            <div className="home-title">
+              <h1>Главная</h1>
+              <p>Ваши деньги всегда под рукой</p>
+            </div>
 
-            <div className="cards-slider">
-              <div className="cards-container">
-                {/* КАРТА 1 — РУБЛЬ */}
+            <div className="home-section">
+              <div className="home-section-top">
+                <h2>Мои счета</h2>
 
-                <div className="bank-card">
-                  <div className="balance rounded-4 p-3 bg-primary text-white">
-                    <b>{text.balance_title} №1</b>
+                <button className="home-see-all">Все</button>
+              </div>
 
-                    <br />
+              {/* Горизонтальный скролл */}
+              <div className="accounts-scroll">
+                {/* Счет 1 */}
+                <div className="account-card account-card-black">
+                  <div className="account-card-top">
+                    <span>Основной счет С</span>
 
-                    <b className="balance-rub">{resultRub}</b>
+                    <i className="fa-solid fa-ellipsis"></i>
+                  </div>
 
-                    <b className="balance-currency">₽</b>
+                  <div className="account-card-balance">
+                    {resultSum}
+                    <span>сом</span>
+                  </div>
+
+                  <div className="account-card-bottom">
+                    <span>**** 4582</span>
+                    <span>KGS</span>
                   </div>
                 </div>
 
-                {/* КАРТА 2 — ДОЛЛАР */}
+                {/* Счет 2 */}
+                <div className="account-card account-card-gray">
+                  <div className="account-card-top">
+                    <span>Рубль</span>
 
-                <div className="bank-card">
-                  <div className="balance rounded-4 p-3 bg-primary text-white">
-                    <b>{text.balance_title} №2</b>
+                    <i className="fa-solid fa-ellipsis"></i>
+                  </div>
 
-                    <br />
+                  <div className="account-card-balance">
+                    {resultRub}
+                    <span>₽</span>
+                  </div>
 
-                    <b className="balance-rub">{resultUsd}</b>
-
-                    <b className="balance-currency">$</b>
+                  <div className="account-card-bottom">
+                    <span>**** 7291</span>
+                    <span>KGS</span>
                   </div>
                 </div>
 
-                {/* КАРТА 3 — СОМ */}
+                {/* Счет 3 */}
+                <div className="account-card account-card-light">
+                  <div className="account-card-top">
+                    <span>Доллары</span>
 
-                <div className="bank-card">
-                  <div className="balance rounded-4 p-3 bg-primary text-white">
-                    <b>{text.balance_title} №3</b>
+                    <i className="fa-solid fa-ellipsis"></i>
+                  </div>
 
-                    <br />
+                  <div className="account-card-balance">
+                    {resultUsd}
+                    <span>$</span>
+                  </div>
 
-                    <b className="balance-rub">{resultSum}</b>
-
-                    <b className="balance-currency">с</b>
+                  <div className="account-card-bottom">
+                    <span>**** 6314</span>
+                    <span>USD</span>
                   </div>
                 </div>
               </div>
             </div>
 
-            <br />
-            <br />
+            {/* РЕКЛАМНЫЙ БАННЕР  */}
+            <div className="home-banner">
+              <div className="home-banner-content">
+                <div className="home-banner-label">СПЕЦИАЛЬНО ДЛЯ ВАС</div>
 
-            {/* КНОПКИ */}
+                <h3>
+                  Получайте бонусы
+                  <br />
+                  при оплате через EasyPay
+                </h3>
 
-            <Link to="/balance" className="btn btn-primary col-12 mb-2">
-              💰 {text.lbl_check_balance}
-            </Link>
+                <button>Подробнее</button>
+              </div>
 
-            <Link to="/withdraw" className="btn btn-primary col-12 mb-2">
-              💸 {text.btn_withdraw_money}
-            </Link>
+              <div className="home-banner-icon">
+                <i className="fa-solid fa-gift"></i>
+              </div>
+            </div>
 
-            <Link to="/topup" className="btn btn-primary col-12 mb-2">
-              💳 {text.btn_top_up}
-            </Link>
+            {/*  БЫСТРЫЕ ДЕЙСТВИЯ  */}
+            <div className="home-section">
+              <Fastbar />
+            </div>
 
-            <Link to="/exchange" className="btn btn-primary col-12 mb-2">
-              💱 {text.exchange}
-            </Link>
+            {/* ================= ПОСЛЕДНИЕ ОПЕРАЦИИ ================= */}
+            <div className="home-section home-transactions">
+              <div className="home-section-top">
+                <h2>Последние операции</h2>
 
-            <Link to="/history" className="btn btn-primary col-12 mb-2">
-              📜 {text.btn_history}
-            </Link>
+                <button className="home-see-all">Все</button>
+              </div>
 
-            <Link to="/changepassword" className="btn btn-primary col-12 mb-2">
-              🔐
-              {lang === 1 ? " Смена пароля" : " Change Password"}
-            </Link>
+              {/* Операция 1 */}
+              <div className="transaction-item">
+                <div className="transaction-icon">
+                  <i className="fa-solid fa-basket-shopping"></i>
+                </div>
 
-            <br />
+                <div className="transaction-info">
+                  <strong>Супермаркет</strong>
+                  <span>Сегодня, 12:45</span>
+                </div>
 
-            {/* ВЫХОД */}
+                <div className="transaction-price">- 1 250 сом</div>
+              </div>
 
-            <button
-              onClick={handleLogOut}
-              className="btn btn-danger col-12 mb-2"
-            >
-              🚪
-              {lang === 1 ? " Выйти" : " Log Out"}
-            </button>
+              {/* Операция 2 */}
+              <div className="transaction-item">
+                <div className="transaction-icon">
+                  <i className="fa-solid fa-mobile-screen"></i>
+                </div>
+
+                <div className="transaction-info">
+                  <strong>Пополнение телефона</strong>
+                  <span>Сегодня, 10:20</span>
+                </div>
+
+                <div className="transaction-price">- 500 сом</div>
+              </div>
+
+              {/* Операция 3 */}
+              <div className="transaction-item">
+                <div className="transaction-icon">
+                  <i className="fa-solid fa-arrow-down"></i>
+                </div>
+
+                <div className="transaction-info">
+                  <strong>Пополнение счета</strong>
+                  <span>Вчера, 18:30</span>
+                </div>
+
+                <div className="transaction-price transaction-plus">
+                  + 10 000 сом
+                </div>
+              </div>
+            </div>
           </div>
+          <br />
+          <br />
+          <br />
+          <br />
+
+          {/*BOTTOM BAR */}
+          <Bottombar />
         </div>
       </div>
     </div>

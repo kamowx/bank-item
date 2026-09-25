@@ -1,8 +1,12 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { language } from "../data/language";
+import { useNavigate } from "react-router-dom";
+import Bottombar from "../components/bottombar";
 
 function Topup() {
+  const navigate = useNavigate();
+
   /* ЯЗЫК */
 
   const [data, setData] = useState([]);
@@ -10,6 +14,7 @@ function Topup() {
   const [lang, setLang] = useState(
     Number(localStorage.getItem("language")) || 1
   );
+
   const [users, setUsers] = useState([]);
   const [user, setUser] = useState(null);
 
@@ -21,15 +26,25 @@ function Topup() {
 
   const [topupResult, setTopupResult] = useState("");
 
+  useEffect(() => {
+    if (topupResult) {
+      const timer = setTimeout(() => {
+        setTopupResult("");
+      }, 3000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [topupResult]);
+
   /* ВАЛЮТА */
 
-  const [currency, setCurrency] = useState("rub");
+  const [currency, setCurrency] = useState("som");
 
   /* ID ПОЛЬЗОВАТЕЛЯ */
 
   const id = JSON.parse(localStorage.getItem("id"));
 
-  //Получения getItem
+  // Получения getItem
   const allUser = async () => {
     try {
       const response = await axios({
@@ -98,7 +113,7 @@ function Topup() {
 
     /* СОХРАНЯЕМ БАЛАНС */
 
-    //Save и setItem
+    // Save и setItem
     const saveTopup = async () => {
       if (!number.trim()) return;
 
@@ -128,7 +143,7 @@ function Topup() {
 
     /* ИСТОРИЯ */
 
-    //Получения getItem
+    // Получения getItem
     const getHistory = async () => {
       try {
         const response = await axios({
@@ -146,7 +161,7 @@ function Topup() {
       }
     };
 
-    //Save и setItem
+    // Save и setItem
     const saveHistory = async () => {
       if (!number.trim()) return;
 
@@ -176,103 +191,132 @@ function Topup() {
   }
 
   return (
-    <div className="container d-flex justify-content-center mt-5">
-      <div className="card card-wrapper p-3" style={{ width: "400px" }}>
-        <div className="card-page">
-          {/* ЗАГОЛОВОК */}
+    <div className="app">
+      <div className="onboarding topup-page">
+        {/* ================= HEADER ================= */}
 
-          <div className="card-header text-center p-4">
-            <h4>
-              <b>📥 {text.btn_top_up}</b>
-            </h4>
+        <button className="back-button" onClick={() => navigate(-1)}>
+          <i className="fa-solid fa-arrow-left"></i>
+        </button>
 
-            <span>{text.enter_amount}</span>
+        <div className="onboarding-header">
+          <div className="logo-icon">
+            <span></span>
+            <span></span>
+            <span></span>
           </div>
 
-          <div className="card-body">
-            {/* СУММА */}
+          <a href="/topup" className="i1">
+            <div className="logo-text">EasyPay</div>
+          </a>
+        </div>
 
-            <label>
-              <b>{text.amount}:</b>
-            </label>
+        {/* ================= CONTENT ================= */}
 
-            {/* ПОКАЗАТЬ ПОПОЛНЕНИЕ */}
+        <div className="topup-content">
+          <div className="topup-title">
+            <h1>Пополнить счёт</h1>
 
-            {topupResult && (
-              <h4 className="mt-3">
-                Пополнено денег: {topupResult} {currency === "rub" && "₽"}
-                {currency === "dollar" && "$"}
-                {currency === "som" && "с"}
-              </h4>
-            )}
+            <p>Введите сумму и выберите валюту</p>
+          </div>
 
-            {/* INPUT */}
+          {/* ================= SUCCESS ================= */}
 
-            <input
-              type="number"
-              className="form-control"
-              placeholder={text.enter_amount}
-              value={number}
-              onChange={(e) => setNumber(e.target.value)}
-            />
+          {topupResult && (
+            <div className="topup-success">
+              <div className="topup-success-icon">
+                <i className="fa-solid fa-check"></i>
+              </div>
 
-            <br />
+              <div className="topup-success-content">
+                <span>Счёт успешно пополнен</span>
 
-            {/* ДОЛЛАР */}
+                <h4>
+                  + {topupResult} {currency === "rub" && "₽"}
+                  {currency === "dollar" && "$"}
+                  {currency === "som" && "с"}
+                </h4>
+              </div>
+            </div>
+          )}
 
-            <label>
+          {/* ================= FORM ================= */}
+
+          <div className="topup-form">
+            {/* Сумма */}
+
+            <div className="topup-input-box">
+              <label>Сумма</label>
+
               <input
-                onChange={() => setCurrency("dollar")}
-                type="radio"
-                name="currency"
-              />{" "}
-              Доллар $
-            </label>
+                type="number"
+                placeholder={text.enter_amount}
+                value={number}
+                onChange={(e) => setNumber(e.target.value)}
+              />
+            </div>
 
-            <br />
+            {/* Валюта */}
 
-            {/* РУБЛЬ */}
+            <div className="topup-currency">
+              <label className="currency-title">Валюта</label>
 
-            <label>
-              <input
-                onChange={() => setCurrency("rub")}
-                type="radio"
-                name="currency"
-              />{" "}
-              Рубль ₽
-            </label>
+              <div className="currency-list">
+                {/* СОМ */}
 
-            <br />
+                <label className="currency-item">
+                  <input
+                    type="radio"
+                    name="currency"
+                    value="som"
+                    checked={currency === "som"}
+                    onChange={() => setCurrency("som")}
+                  />
 
-            {/* СОМ */}
+                  <span>Сом</span>
+                </label>
 
-            <label>
-              <input
-                onChange={() => setCurrency("som")}
-                type="radio"
-                name="currency"
-              />{" "}
-              Сом с
-            </label>
+                {/* РУБЛЬ */}
 
-            {/* КНОПКА */}
+                <label className="currency-item">
+                  <input
+                    type="radio"
+                    name="currency"
+                    value="rub"
+                    checked={currency === "rub"}
+                    onChange={() => setCurrency("rub")}
+                  />
 
-            <button
-              onClick={topup}
-              className="btn bg-success text-white col-12 mt-3"
-            >
-              {text.btn_top_up}
+                  <span>Рубль</span>
+                </label>
+
+                {/* ДОЛЛАР */}
+
+                <label className="currency-item">
+                  <input
+                    type="radio"
+                    name="currency"
+                    value="dollar"
+                    checked={currency === "dollar"}
+                    onChange={() => setCurrency("dollar")}
+                  />
+
+                  <span>Доллар</span>
+                </label>
+              </div>
+            </div>
+
+            {/* Кнопка */}
+
+            <button className="topup-button" onClick={topup}>
+              Пополнить
             </button>
-
-            {/* НАЗАД */}
-
-            <a href="/home">
-              <button className="btn btn-secondary col-12 mt-3">
-                {text.btn_back}
-              </button>
-            </a>
           </div>
         </div>
+
+        {/* ================= BOTTOM BAR ================= */}
+
+        <Bottombar />
       </div>
     </div>
   );

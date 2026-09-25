@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import { language } from "../data/language";
 import axios from "axios";
-
+import Bottombar from "../components/bottombar";
+import { useNavigate } from "react-router-dom";
 function Exchange() {
+  const navigate = useNavigate();
   /* ЯЗЫК */
   const [users, setUsers] = useState([]);
   const [user, setUser] = useState(null);
@@ -469,181 +471,204 @@ function Exchange() {
   }
 
   return (
-    <div className="container d-flex justify-content-center mt-5">
-      <div className="card card-wrapper p-3" style={{ width: "400px" }}>
-        <div className="card-page">
-          {/* ЗАГОЛОВОК */}
+    <div className="app">
+      <div className="onboarding exchange-page">
+        {/* ================= HEADER ================= */}
 
-          <div className="card-header text-center p-4">
-            <h4>
-              <b>💱 Обмен счета</b>
-            </h4>
+        <button className="back-button" onClick={() => navigate(-1)}>
+          <i className="fa-solid fa-arrow-left"></i>
+        </button>
 
-            <span>Текущее состояние</span>
+        <div className="onboarding-header">
+          <div className="logo-icon">
+            <span></span>
+            <span></span>
+            <span></span>
           </div>
 
-          {/* КУРСЫ */}
+          <div className="logo-text">EasyPay</div>
+        </div>
 
-          <table className="currency-table">
-            <tbody>
-              <tr className="f1">
-                <td>
-                  <big>$ 1 =</big>
-                  <b>87.45 KGS</b>
-                </td>
+        {/* ================= CONTENT ================= */}
 
-                <td>
-                  <big>$ 1 =</big>
-                  <b>84.95 RUB</b>
-                </td>
-              </tr>
+        <div className="exchange-content">
+          {/* ================= TITLE ================= */}
 
-              <tr className="f1">
-                <td>
-                  <big>с 1 =</big>
-                  <b>0.011 USD</b>
-                </td>
+          <div className="exchange-title">
+            <h1>Обмен валют</h1>
 
-                <td>
-                  <big>с 1 =</big>
-                  <b>0.97 RUB</b>
-                </td>
-              </tr>
+            <p>Обменивайте деньги между своими счетами</p>
+          </div>
 
-              <tr className="f1">
-                <td>
-                  <big>₽ 1 =</big>
-                  <b>1.03 KGS</b>
-                </td>
+          {/* ================= CURRENCY RATES ================= */}
 
-                <td>
-                  <big>₽ 1 =</big>
-                  <b>0.012 USD</b>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+          <div className="exchange-rates">
+            <div className="exchange-section-title">
+              <h2>Курсы валют</h2>
 
-          <div className="card-body">
-            <div className="cards-slider">
-              <div className="cards-container">
-                {/* РУБЛИ */}
+              <span>Сегодня</span>
+            </div>
 
-                <div className="bank-card mb-3">
-                  <div className="balance rounded-4 p-3 bg-primary text-white">
-                    <b>{text.balance_title} №1</b>
+            <div className="rates-list">
+              <div className="rate-item">
+                <span>$ 1</span>
+                <strong>87.45 KGS</strong>
+              </div>
 
-                    <br />
+              <div className="rate-item">
+                <span>$ 1</span>
+                <strong>84.95 RUB</strong>
+              </div>
 
-                    <b>{result_r.toFixed(2)} ₽</b>
+              <div className="rate-item">
+                <span>с 1</span>
+                <strong>0.011 USD</strong>
+              </div>
 
-                    <br />
+              <div className="rate-item">
+                <span>с 1</span>
+                <strong>0.97 RUB</strong>
+              </div>
 
-                    <input
-                      type="number"
-                      className="form-control mt-2"
-                      placeholder="Введите сумму ₽"
-                      value={numberRub}
-                      onChange={(e) => setNumberRub(e.target.value)}
-                    />
+              <div className="rate-item">
+                <span>₽ 1</span>
+                <strong>1.03 KGS</strong>
+              </div>
 
-                    <button
-                      onClick={rubSom}
-                      className="btn btn-light w-100 mt-2"
-                    >
-                      ₽ → Сом
-                    </button>
+              <div className="rate-item">
+                <span>₽ 1</span>
+                <strong>0.012 USD</strong>
+              </div>
+            </div>
+          </div>
 
-                    <button
-                      onClick={rubDollar}
-                      className="btn btn-light w-100 mt-2"
-                    >
-                      ₽ → Доллар
-                    </button>
+          {/* ================= ACCOUNTS ================= */}
+
+          <div className="exchange-section">
+            <div className="exchange-section-title">
+              <h2>Мои счета</h2>
+            </div>
+
+            {/* Горизонтальный скролл */}
+
+            <div className="exchange-cards-scroll">
+              {/* ================= RUB ================= */}
+
+              <div className="exchange-card exchange-rub">
+                <div className="exchange-card-top">
+                  <div>
+                    <span>Рубли</span>
+
+                    <small>Счёт №1</small>
                   </div>
+
+                  <div className="exchange-currency-icon">₽</div>
                 </div>
 
-                {/* ДОЛЛАРЫ */}
+                <div className="exchange-balance">
+                  {result_r.toFixed(2)}
 
-                <div className="bank-card mb-3">
-                  <div className="balance rounded-4 p-3 bg-primary text-white">
-                    <b>{text.balance_title} №2</b>
-
-                    <br />
-
-                    <b>{result_d.toFixed(2)} $</b>
-
-                    <br />
-
-                    <input
-                      type="number"
-                      className="form-control mt-2"
-                      placeholder="Введите сумму $"
-                      value={numberDollar}
-                      onChange={(e) => setNumberDollar(e.target.value)}
-                    />
-
-                    <button
-                      onClick={dollarSom}
-                      className="btn btn-light w-100 mt-2"
-                    >
-                      $ → Сом
-                    </button>
-
-                    <button
-                      onClick={dollarRub}
-                      className="btn btn-light w-100 mt-2"
-                    >
-                      $ → Рубль
-                    </button>
-                  </div>
+                  <span>₽</span>
                 </div>
 
-                {/* СОМЫ */}
+                <div className="exchange-input-group">
+                  <label>Сумма обмена</label>
 
-                <div className="bank-card mb-3">
-                  <div className="balance rounded-4 p-3 bg-primary text-white">
-                    <b>{text.balance_title} №3</b>
+                  <input
+                    type="number"
+                    placeholder="Введите сумму ₽"
+                    value={numberRub}
+                    onChange={(e) => setNumberRub(e.target.value)}
+                  />
+                </div>
 
-                    <br />
+                <div className="exchange-buttons">
+                  <button onClick={rubSom}>₽ → Сом</button>
 
-                    <b>{result_s.toFixed(2)} с</b>
+                  <button onClick={rubDollar}>₽ → Доллар</button>
+                </div>
+              </div>
 
-                    <br />
+              {/* ================= USD ================= */}
 
-                    <input
-                      type="number"
-                      className="form-control mt-2"
-                      placeholder="Введите сумму сом"
-                      value={numberSom}
-                      onChange={(e) => setNumberSom(e.target.value)}
-                    />
+              <div className="exchange-card exchange-usd">
+                <div className="exchange-card-top">
+                  <div>
+                    <span>Доллары</span>
 
-                    <button
-                      onClick={somRub}
-                      className="btn btn-light w-100 mt-2"
-                    >
-                      Сом → ₽
-                    </button>
-
-                    <button
-                      onClick={somDollar}
-                      className="btn btn-light w-100 mt-2"
-                    >
-                      Сом → $
-                    </button>
+                    <small>Счёт №2</small>
                   </div>
+
+                  <div className="exchange-currency-icon">$</div>
+                </div>
+
+                <div className="exchange-balance">
+                  {result_d.toFixed(2)}
+
+                  <span>$</span>
+                </div>
+
+                <div className="exchange-input-group">
+                  <label>Сумма обмена</label>
+
+                  <input
+                    type="number"
+                    placeholder="Введите сумму $"
+                    value={numberDollar}
+                    onChange={(e) => setNumberDollar(e.target.value)}
+                  />
+                </div>
+
+                <div className="exchange-buttons">
+                  <button onClick={dollarSom}>$ → Сом</button>
+
+                  <button onClick={dollarRub}>$ → Рубль</button>
+                </div>
+              </div>
+
+              {/* ================= SOM ================= */}
+
+              <div className="exchange-card exchange-som">
+                <div className="exchange-card-top">
+                  <div>
+                    <span>Сомы</span>
+
+                    <small>Счёт №3</small>
+                  </div>
+
+                  <div className="exchange-currency-icon">с</div>
+                </div>
+
+                <div className="exchange-balance">
+                  {result_s.toFixed(2)}
+
+                  <span>с</span>
+                </div>
+
+                <div className="exchange-input-group">
+                  <label>Сумма обмена</label>
+
+                  <input
+                    type="number"
+                    placeholder="Введите сумму сом"
+                    value={numberSom}
+                    onChange={(e) => setNumberSom(e.target.value)}
+                  />
+                </div>
+
+                <div className="exchange-buttons">
+                  <button onClick={somRub}>Сом → ₽</button>
+
+                  <button onClick={somDollar}>Сом → $</button>
                 </div>
               </div>
             </div>
-
-            <a href="/home">
-              <button className="btn btn-secondary col-12 mt-3">
-                {text.btn_back}
-              </button>
-            </a>
           </div>
         </div>
+
+        {/* ================= BOTTOM BAR ================= */}
+
+        <Bottombar />
       </div>
     </div>
   );

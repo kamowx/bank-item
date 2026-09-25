@@ -1,8 +1,10 @@
 import { language } from "../data/language";
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 function Signup() {
   /* ЯЗЫК */
+  const navigate = useNavigate();
 
   const [lang] = useState(Number(localStorage.getItem("language")) || 1);
 
@@ -15,6 +17,9 @@ function Signup() {
   //ALL DATA
   const [users, setUsers] = useState([]);
   const [email, setEmail] = useState("");
+  const [firstname, setFirstname] = useState("");
+  const [lastname, setLastname] = useState("");
+  const [numberphone, setNumberphone] = useState("");
   const [password1, setPassword1] = useState("");
   const [password2, setPassword2] = useState("");
 
@@ -59,12 +64,23 @@ function Signup() {
       return;
     }
 
+    const checkNumberphone = users.some(
+      (item) => item.numberphone == numberphone
+    );
+
+    if (checkNumberphone == true) {
+      alert("Пользователь с таким номером уже зарегистрирован");
+      return;
+    }
     try {
       const responce = await axios({
         method: "POST",
         url: "https://6aae654c606bd915d110c57c.mockapi.io/data",
         data: {
           email: email,
+          firstname: firstname,
+          lastname: lastname,
+          numberphone: numberphone,
           password1: password1,
           password2: password2,
         },
@@ -76,10 +92,14 @@ function Signup() {
         alert("Учетная запись создана");
 
         setEmail("");
+        setFirstname("");
+        setLastname("");
+        setNumberphone("");
         setPassword1("");
         setPassword2("");
 
         allUser();
+        navigate("/signin");
       }
     } catch (error) {
       console.error(error);
@@ -93,71 +113,99 @@ function Signup() {
     }
   }, []);
   return (
-    <div className="container d-flex justify-content-center mt-5">
-      <div className="card card-wrapper p-3" style={{ width: "400px" }}>
-        <div className="card-page">
-          {/* ЗАГОЛОВОК */}
-
-          <div className="card-header text-center p-4">
-            <h4>
-              <b>🔐 Регистарция</b>
-            </h4>
-
-            <span>Введите данные для регистарции</span>
+    <div className="app">
+      <div className="onboarding">
+        <div className="onboarding-header">
+          <div className="logo-icon">
+            <span></span>
+            <span></span>
+            <span></span>
           </div>
 
-          <div className="card-body">
-            {/* EMAIL */}
+          <div className="logo-text">EasyPay</div>
+        </div>
 
-            <label className="mb-2">
-              <b>Email:</b>
-            </label>
+        <div className="login-content">
+          <h1>Регистарция</h1>
 
-            <input
-              onChange={(e) => setEmail(e.target.value)}
-              value={email}
-              type="email"
-              className="form-control"
-              placeholder="Введите email"
-            />
+          <p>Зарегистриуйтесь в аккаунт EasyPay</p>
 
-            <br />
+          <div className="login-form">
+            {/*Имя Фамилия*/}
+            {/* Имя Фамилия */}
 
-            {/* ПАРОЛЬ */}
+            <div className="login-input-box">
+              <label>Имя - Фамилия</label>
 
-            <label className="mb-2">
-              <b>Пароль:</b>
-            </label>
+              <div className="name-surname">
+                <input
+                  type="text"
+                  placeholder="Введите имя"
+                  onChange={(e) => setFirstname(e.target.value)}
+                  value={firstname}
+                />
 
-            <div className="position-relative">
+                <input
+                  type="text"
+                  placeholder="Введите фамилию"
+                  onChange={(e) => setLastname(e.target.value)}
+                  value={lastname}
+                />
+              </div>
+            </div>
+            {/* Email */}
+
+            <div className="login-input-box">
+              <label>Email</label>
+
+              <input
+                type="email"
+                placeholder="Введите email"
+                onChange={(e) => setEmail(e.target.value)}
+                value={email}
+              />
+            </div>
+
+            {/* Телефон */}
+
+            <div className="login-input-box">
+              <label>Номер телефона</label>
+
+              <input
+                type="number"
+                placeholder="+996 000 000 000"
+                onChange={(e) => setNumberphone(e.target.value)}
+                value={numberphone}
+              />
+            </div>
+
+            {/* Пароль */}
+
+            <div className="login-input-box">
+              <label>Пароль</label>
+
               <input
                 onChange={(e) => setPassword1(e.target.value)}
                 value={password1}
-                className="form-control pe-5"
                 type="password"
-                placeholder="Введите пароль"
+                placeholder="Придумайте пароль"
               />
             </div>
-            <br />
-            {/* ПАРОЛЬ */}
 
-            <label className="mb-2">
-              <b>Пароль:</b>
-            </label>
+            <div className="login-input-box">
+              <label>Пароль</label>
 
-            <div className="position-relative">
               <input
                 onChange={(e) => setPassword2(e.target.value)}
                 value={password2}
                 type={showPassword ? "text" : "password"}
-                className="form-control pe-5"
-                placeholder="Введите пароль"
+                placeholder="Повторите пароль"
               />
 
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="btn position-absolute top-50 end-0 translate-middle-y"
+                className="btn position-absolute top-50 end-0 translate-middle-y pt-4"
               >
                 <i
                   className={
@@ -166,23 +214,19 @@ function Signup() {
                 ></i>
               </button>
             </div>
-            {/* КНОПКА */}
 
-            <button className="btn btn-primary col-12 mt-4" onClick={register}>
-              Регистарция
+            <button className="login-submit" onClick={register}>
+              зарегистрироваться
             </button>
           </div>
-          <br />
-          <br />
-          <p>
-            <small>
-              <small>
-                <center>
-                  У вас есть аккаунта? <a href="/">Вход</a>
-                </center>
-              </small>
-            </small>
-          </p>
+        </div>
+
+        <div className="login-register">
+          <span>Есть аккаунта?</span>
+
+          <a href="/signin">
+            <button>Вход</button>
+          </a>
         </div>
       </div>
     </div>

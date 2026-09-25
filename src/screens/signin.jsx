@@ -14,14 +14,23 @@ function Signin() {
 
   const [showPassword, setShowPassword] = useState(false);
 
+  /* ALL USERS */
+
   const [users, setUsers] = useState([]);
+
   const [emailsigin, setEmailsigin] = useState("");
+
   const [password2signin, setPassword2signin] = useState("");
 
-  // ДОБАВИЛ
+  const [numberphonesignin, setNumberphonesignin] = useState("");
+
+  /* NAVIGATE */
+
   const navigate = useNavigate();
 
-  //Получения getItem
+  /* ================= ПОЛУЧАЕМ USERS ================= */
+
+  // Получения getItem
   const allUser = async () => {
     try {
       const response = await axios({
@@ -43,27 +52,8 @@ function Signin() {
     allUser();
   }, []);
 
-  //Save и setItem
-  const signIn = async () => {
-    if (!emailsigin.trim() || !password2signin.trim()) {
-      alert("Заполните все поля");
-      return;
-    }
+  /* ================= ПРОВЕРКА ВХОДА ================= */
 
-    const user = users.find(
-      (item) => item.email == emailsigin && item.password2 == password2signin
-    );
-
-    if (!user) {
-      alert("Имя пользователя или пароль неправильные");
-      return;
-    }
-    alert("Вы успешно вошли");
-
-    localStorage.setItem("id", JSON.stringify(user.id));
-
-    navigate("/home");
-  };
   useEffect(() => {
     const id = localStorage.getItem("id");
 
@@ -71,56 +61,108 @@ function Signin() {
       navigate("/home");
     }
   }, []);
+
+  /* ================= SIGN IN ================= */
+
+  // Save и setItem
+  const signIn = async () => {
+    if (
+      !emailsigin.trim() ||
+      !password2signin.trim() ||
+      !numberphonesignin.trim()
+    ) {
+      alert("Заполните все поля");
+      return;
+    }
+
+    const user = users.find(
+      (item) =>
+        item.email == emailsigin &&
+        item.password2 == password2signin &&
+        item.numberphone == numberphonesignin
+    );
+
+    if (!user) {
+      alert("Имя пользователя или пароль неправильные");
+      return;
+    }
+
+    alert("Вы успешно вошли");
+
+    /* СОХРАНЯЕМ ID */
+
+    localStorage.setItem("id", JSON.stringify(user.id));
+
+    /* ПЕРЕХОД НА HOME */
+
+    navigate("/home");
+  };
+
   return (
-    <div className="container d-flex justify-content-center mt-5">
-      <div className="card card-wrapper p-3" style={{ width: "400px" }}>
-        <div className="card-page">
-          {/* ЗАГОЛОВОК */}
+    <div className="app">
+      <div className="onboarding">
+        {/* ================= HEADER ================= */}
 
-          <div className="card-header text-center p-4">
-            <h4>
-              <b>🔐 Вход в аккаунт</b>
-            </h4>
-
-            <span>Введите данные для входа</span>
+        <div className="onboarding-header">
+          <div className="logo-icon">
+            <span></span>
+            <span></span>
+            <span></span>
           </div>
 
-          <div className="card-body">
-            {/* EMAIL */}
+          <div className="logo-text">EasyPay</div>
+        </div>
 
-            <label className="mb-2">
-              <b>Email:</b>
-            </label>
+        {/* ================= CONTENT ================= */}
 
-            <input
-              onChange={(e) => setEmailsigin(e.target.value)}
-              value={emailsigin}
-              type="email"
-              className="form-control"
-              placeholder="Введите email"
-            />
+        <div className="login-content">
+          <h1>Вход</h1>
 
-            <br />
+          <p>Войдите в свой аккаунт EasyPay</p>
 
-            {/* ПАРОЛЬ */}
+          <div className="login-form">
+            {/* ================= EMAIL ================= */}
 
-            <label className="mb-2">
-              <b>Пароль:</b>
-            </label>
+            <div className="login-input-box">
+              <label>Email</label>
 
-            <div className="position-relative">
               <input
-                type={showPassword ? "text" : "password"}
-                className="form-control pe-5"
-                placeholder="Введите пароль"
+                type="email"
+                placeholder="Введите email"
+                onChange={(e) => setEmailsigin(e.target.value)}
+                value={emailsigin}
+              />
+            </div>
+
+            {/* ================= ТЕЛЕФОН ================= */}
+
+            <div className="login-input-box">
+              <label>Номер телефона</label>
+
+              <input
+                type="tel"
+                placeholder="+996 000 000 000"
+                onChange={(e) => setNumberphonesignin(e.target.value)}
+                value={numberphonesignin}
+              />
+            </div>
+
+            {/* ================= ПАРОЛЬ ================= */}
+
+            <div className="login-input-box">
+              <label>Пароль</label>
+
+              <input
                 onChange={(e) => setPassword2signin(e.target.value)}
                 value={password2signin}
+                type={showPassword ? "text" : "password"}
+                placeholder="Введите пароль"
               />
 
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="btn position-absolute top-50 end-0 translate-middle-y"
+                className="btn position-absolute top-50 end-0 translate-middle-y pt-4"
               >
                 <i
                   className={
@@ -130,25 +172,22 @@ function Signin() {
               </button>
             </div>
 
-            {/* КНОПКА */}
+            {/* ================= BUTTON ================= */}
 
-            <button className="btn btn-primary col-12 mt-4" onClick={signIn}>
-              Войти
+            <button className="login-submit" onClick={signIn}>
+              Вход
             </button>
           </div>
+        </div>
 
-          <br />
-          <br />
+        {/* ================= SIGNUP ================= */}
 
-          <p>
-            <small>
-              <small>
-                <center>
-                  У вас нет аккаунта? <a href="/signup">Регистарция</a>
-                </center>
-              </small>
-            </small>
-          </p>
+        <div className="login-register">
+          <span>Нет аккаунта?</span>
+
+          <a href="/signup">
+            <button>Регистрация</button>
+          </a>
         </div>
       </div>
     </div>

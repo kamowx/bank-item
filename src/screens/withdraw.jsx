@@ -1,8 +1,11 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { language } from "../data/language";
+import Bottombar from "../components/bottombar";
+import { useNavigate } from "react-router-dom";
 
 function Withdraw() {
+  const navigate = useNavigate();
   /* ЯЗЫК */
 
   const [data, setData] = useState([]);
@@ -20,10 +23,19 @@ function Withdraw() {
   const [number, setNumber] = useState("");
 
   const [withdrawResult, setWithdrawResult] = useState("");
+  useEffect(() => {
+    if (withdrawResult) {
+      const timer = setTimeout(() => {
+        setWithdrawResult("");
+      }, 3000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [withdrawResult]);
 
   /* ВАЛЮТА */
 
-  const [currency, setCurrency] = useState("rub");
+  const [currency, setCurrency] = useState("som");
 
   /* ID ПОЛЬЗОВАТЕЛЯ */
 
@@ -175,98 +187,122 @@ function Withdraw() {
     saveHistory();
   }
   return (
-    <div className="container d-flex justify-content-center mt-5">
-      <div className="card card-wrapper p-3" style={{ width: "400px" }}>
-        <div className="card-page">
-          {/* ЗАГОЛОВОК */}
-
-          <div className="card-header text-center p-4">
-            <h4>
-              <b>📤 {text.btn_withdraw_money}</b>
-            </h4>
-
-            <span>Введите сумму</span>
+    <div className="app">
+      <div className="onboarding topup-page">
+        {/* ================= HEADER ================= */}
+        <button className="back-button" onClick={() => navigate(-1)}>
+          <i className="fa-solid fa-arrow-left"></i>
+        </button>
+        <div className="onboarding-header">
+          <div className="logo-icon">
+            <span></span>
+            <span></span>
+            <span></span>
           </div>
 
-          <div className="card-body">
-            <label>
-              <b>{text.amount}:</b>
-            </label>
+          <a href="/withdraw" className="i1">
+            <div className="logo-text">EasyPay</div>
+          </a>
+        </div>
 
-            {/* ПОСЛЕДНЕЕ СНЯТИЕ */}
+        {/* ================= CONTENT ================= */}
 
-            {withdrawResult && (
-              <h4 className="mt-3">
-                Снято денег: {withdrawResult} {currency === "rub" && "₽"}
-                {currency === "dollar" && "$"}
-                {currency === "som" && "с"}
-              </h4>
-            )}
+        <div className="topup-content">
+          <div className="topup-title">
+            <h1>Пополнить счёт</h1>
+            <p>Введите сумму и выберите валюту</p>
+          </div>
+          {withdrawResult && (
+            <div className="topup-success">
+              <div className="topup-success-icon">
+                <i className="fa-solid fa-check"></i>
+              </div>
 
-            {/* INPUT */}
+              <div className="topup-success-content">
+                <span>Счёт успешно снять</span>
 
-            <input
-              type="number"
-              className="form-control"
-              placeholder={text.enter_amount}
-              onChange={(e) => setNumber(e.target.value)}
-            />
+                <h4>
+                  - {withdrawResult} {currency === "rub" && "₽"}
+                  {currency === "dollar" && "$"}
+                  {currency === "som" && "с"}
+                </h4>
+              </div>
+            </div>
+          )}
+          {/* ================= FORM ================= */}
+          <div className="topup-form">
+            {/* Сумма */}
 
-            <br />
+            <div className="topup-input-box">
+              <label>Сумма</label>
 
-            {/* ДОЛЛАР */}
-
-            <label>
               <input
-                onChange={() => setCurrency("dollar")}
-                type="radio"
-                name="currency"
-              />{" "}
-              Доллар $
-            </label>
+                type="number"
+                placeholder={text.enter_amount}
+                value={number}
+                onChange={(e) => setNumber(e.target.value)}
+              />
+            </div>
 
-            <br />
+            {/* Валюта */}
 
-            {/* РУБЛЬ */}
+            <div className="topup-currency">
+              <label className="currency-title">Валюта</label>
 
-            <label>
-              <input
-                onChange={() => setCurrency("rub")}
-                type="radio"
-                name="currency"
-              />{" "}
-              Рубль ₽
-            </label>
+              <div className="currency-list">
+                {/* СОМ */}
 
-            <br />
+                <label className="currency-item">
+                  <input
+                    type="radio"
+                    name="currency"
+                    value="som"
+                    defaultChecked
+                    onChange={() => setCurrency("som")}
+                  />
 
-            {/* СОМ */}
+                  <span>Сом</span>
+                </label>
 
-            <label>
-              <input
-                onChange={() => setCurrency("som")}
-                type="radio"
-                name="currency"
-              />{" "}
-              Сом с
-            </label>
+                {/* РУБЛЬ */}
 
-            {/* КНОПКА */}
+                <label className="currency-item">
+                  <input
+                    type="radio"
+                    name="currency"
+                    value="rub"
+                    onChange={() => setCurrency("rub")}
+                  />
 
-            <button
-              onClick={withdraw}
-              className="btn bg-danger text-white col-12 mt-3"
-            >
-              {text.btn_withdraw_money}
+                  <span>Рубль</span>
+                </label>
+
+                {/* ДОЛЛАР */}
+
+                <label className="currency-item">
+                  <input
+                    value="usd"
+                    onChange={() => setCurrency("dollar")}
+                    type="radio"
+                    name="currency"
+                  />
+
+                  <span>Доллар</span>
+                </label>
+              </div>
+            </div>
+
+            {/* Кнопка */}
+
+            <button className="topup-button" onClick={withdraw}>
+              Снимать
             </button>
-
-            <a href="/home">
-              <button className="btn btn-secondary col-12 mt-3">
-                {text.btn_back}
-              </button>
-            </a>
           </div>
         </div>
+
+        {/* ================= BOTTOM BAR ================= */}
+
+        <Bottombar />
       </div>
     </div>
   );
