@@ -242,41 +242,11 @@ function Home() {
                 </div>
 
                 <div className="transaction-info">
-                  <strong>Супермаркет</strong>
-                  <span>Сегодня, 12:45</span>
+                  <strong>Нет</strong>
+                  <span>Нет</span>
                 </div>
 
-                <div className="transaction-price">- 1 250 сом</div>
-              </div>
-
-              {/* Операция 2 */}
-              <div className="transaction-item">
-                <div className="transaction-icon">
-                  <i className="fa-solid fa-mobile-screen"></i>
-                </div>
-
-                <div className="transaction-info">
-                  <strong>Пополнение телефона</strong>
-                  <span>Сегодня, 10:20</span>
-                </div>
-
-                <div className="transaction-price">- 500 сом</div>
-              </div>
-
-              {/* Операция 3 */}
-              <div className="transaction-item">
-                <div className="transaction-icon">
-                  <i className="fa-solid fa-arrow-down"></i>
-                </div>
-
-                <div className="transaction-info">
-                  <strong>Пополнение счета</strong>
-                  <span>Вчера, 18:30</span>
-                </div>
-
-                <div className="transaction-price transaction-plus">
-                  + 10 000 сом
-                </div>
+                <div className="transaction-price">НЕТ</div>
               </div>
             </div>
           </div>
