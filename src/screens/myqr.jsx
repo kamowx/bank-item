@@ -39,9 +39,9 @@ function Myqr() {
               <i className="fa-solid fa-user"></i>
             </div>
 
-            <h2>Азамат Токтогулов</h2>
+            <h2></h2>
 
-            <span>+996 700 123 456</span>
+            <span></span>
 
             {/* ================= QR ================= */}
 
