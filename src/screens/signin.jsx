@@ -22,8 +22,6 @@ function Signin() {
 
   const [password2signin, setPassword2signin] = useState("");
 
-  const [numberphonesignin, setNumberphonesignin] = useState("");
-
   /* NAVIGATE */
 
   const navigate = useNavigate();
@@ -66,20 +64,13 @@ function Signin() {
 
   // Save и setItem
   const signIn = async () => {
-    if (
-      !emailsigin.trim() ||
-      !password2signin.trim() ||
-      !numberphonesignin.trim()
-    ) {
+    if (!emailsigin.trim() || !password2signin.trim()) {
       alert("Заполните все поля");
       return;
     }
 
     const user = users.find(
-      (item) =>
-        item.email == emailsigin &&
-        item.password2 == password2signin &&
-        item.numberphone == numberphonesignin
+      (item) => item.email == emailsigin && item.password2 == password2signin
     );
 
     if (!user) {
@@ -131,19 +122,6 @@ function Signin() {
                 placeholder="Введите email"
                 onChange={(e) => setEmailsigin(e.target.value)}
                 value={emailsigin}
-              />
-            </div>
-
-            {/* ================= ТЕЛЕФОН ================= */}
-
-            <div className="login-input-box">
-              <label>Номер телефона</label>
-
-              <input
-                type="tel"
-                placeholder="+996 000 000 000"
-                onChange={(e) => setNumberphonesignin(e.target.value)}
-                value={numberphonesignin}
               />
             </div>
 
