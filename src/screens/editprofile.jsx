@@ -7,6 +7,7 @@ function EditProfile() {
   const navigate = useNavigate();
 
   const [user, setUser] = useState(null);
+  const [users, setUsers] = useState([]);
 
   const [name, setName] = useState("");
   const [surname, setSurname] = useState("");
@@ -29,11 +30,11 @@ function EditProfile() {
       console.log("GET", response);
 
       if (response.status === 200) {
+        setUsers(response.data);
+
         const currentUser = response.data.find((item) => item.id == id);
 
         setUser(currentUser);
-
-        /* ДАННЫЕ ИЗ MOCKAPI СТАВИМ В INPUT */
 
         setName(currentUser?.firstname || "");
         setSurname(currentUser?.lastname || "");
@@ -50,19 +51,34 @@ function EditProfile() {
   }, []);
 
   /* ================= SAVE PROFILE =================== */
-
   const saveProfile = async () => {
     if (!name.trim() || !surname.trim() || !phone.trim() || !email.trim()) {
       alert("Заполните все поля");
       return;
     }
 
+    const checkEmail = users.some(
+      (item) => item.email == email && item.id != id
+    );
+
+    if (checkEmail == true) {
+      alert("Такой пользователь уже существует");
+      return;
+    }
+
+    const checkNumberphone = users.some(
+      (item) => item.numberphone == phone && item.id != id
+    );
+
+    if (checkNumberphone == true) {
+      alert("Пользователь с таким номером уже зарегистрирован");
+      return;
+    }
+
     try {
       const response = await axios({
         method: "PUT",
-
         url: `https://6aae654c606bd915d110c57c.mockapi.io/data/${id}`,
-
         data: {
           firstname: name,
           lastname: surname,
@@ -75,7 +91,6 @@ function EditProfile() {
 
       if (response.status === 200) {
         alert("Данные сохранены");
-
         navigate("/profile");
       }
     } catch (error) {

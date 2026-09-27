@@ -18,6 +18,9 @@ function Transferamount() {
 
   const [amount, setAmount] = useState("");
 
+  const [showAccountModal, setShowAccountModal] = useState(false);
+  const [selectedCurrency, setSelectedCurrency] = useState("som");
+
   const allUser = async () => {
     try {
       const response = await axios({
@@ -86,56 +89,139 @@ function Transferamount() {
 
     const transferAmount = Number(amount);
 
-    const oldMyBalance = Number(user.sum) || 0;
+    /* ================= МОИ БАЛАНСЫ ================= */
+
+    const resultRub = Number(user?.rub) || 0;
+    const resultUsd = Number(user?.usd) || 0;
+    const resultSum = Number(user?.sum) || 0;
+
+    /* ================= БАЛАНС ПОЛУЧАТЕЛЯ ================= */
 
     const oldRecipientBalance = Number(recipientUser.sum) || 0;
 
-    if (oldMyBalance < transferAmount) {
-      alert("Недостаточно денег на счёте");
-      return;
+    /* ================= НОВЫЕ ЗНАЧЕНИЯ ================= */
+
+    let newMySum = resultSum;
+    let newMyRub = resultRub;
+    let newMyUsd = resultUsd;
+
+    let newRecipientSum = oldRecipientBalance;
+
+    /* ================= СОМ ================= */
+
+    if (selectedCurrency === "som") {
+      if (resultSum < transferAmount) {
+        alert("Недостаточно денег на счёте");
+        return;
+      }
+
+      newMySum = resultSum - transferAmount;
+
+      newRecipientSum = oldRecipientBalance + transferAmount;
     }
 
-    const newMyBalance = oldMyBalance - transferAmount;
+    /* ================= РУБЛЬ ================= */
+    else if (selectedCurrency === "rub") {
+      if (resultRub < transferAmount) {
+        alert("Недостаточно рублей на счёте");
+        return;
+      }
 
-    const newRecipientBalance = oldRecipientBalance + transferAmount;
+      newMyRub = resultRub - transferAmount;
 
-    console.log("Мой старый баланс:", oldMyBalance);
+      const rubToSom = transferAmount * 0.97;
 
-    console.log("Мой новый баланс:", newMyBalance);
+      newRecipientSum = oldRecipientBalance + rubToSom;
+    }
+
+    /* ================= ДОЛЛАР ================= */
+    else if (selectedCurrency === "usd") {
+      if (resultUsd < transferAmount) {
+        alert("Недостаточно долларов на счёте");
+        return;
+      }
+
+      newMyUsd = resultUsd - transferAmount;
+
+      const usdToSom = transferAmount * 87.45;
+
+      newRecipientSum = oldRecipientBalance + usdToSom;
+    }
+
+    /* ================= CONSOLE ================= */
+
+    console.log("Выбранный счёт:", selectedCurrency);
+
+    console.log("Сумма перевода:", transferAmount);
+
+    console.log("Мой старый SOM:", resultSum);
+
+    console.log("Мой старый RUB:", resultRub);
+
+    console.log("Мой старый USD:", resultUsd);
+
+    console.log("Мой новый SOM:", newMySum);
+
+    console.log("Мой новый RUB:", newMyRub);
+
+    console.log("Мой новый USD:", newMyUsd);
 
     console.log("Старый баланс получателя:", oldRecipientBalance);
 
-    console.log("Новый баланс получателя:", newRecipientBalance);
+    console.log("Новый баланс получателя:", newRecipientSum);
 
     try {
+      /* ================= PUT ОТПРАВИТЕЛЬ ================= */
+
       const responseSender = await axios({
         method: "PUT",
+
         url: `https://6aae654c606bd915d110c57c.mockapi.io/data/${user.id}`,
+
         data: {
-          sum: newMyBalance,
+          sum: newMySum,
+          rub: newMyRub,
+          usd: newMyUsd,
         },
       });
 
       console.log("PUT ОТПРАВИТЕЛЬ:", responseSender);
 
+      /* ================= PUT ПОЛУЧАТЕЛЬ ================= */
+
       const responseRecipient = await axios({
         method: "PUT",
+
         url: `https://6aae654c606bd915d110c57c.mockapi.io/data/${recipientUser.id}`,
+
         data: {
-          sum: newRecipientBalance,
+          sum: newRecipientSum,
         },
       });
 
       console.log("PUT ПОЛУЧАТЕЛЬ:", responseRecipient);
 
+      /* ================= POST HISTORY ================= */
+
       const historyResponse = await axios({
         method: "POST",
+
         url: "https://6aae654c606bd915d110c57c.mockapi.io/history",
+
         data: {
           number: transferAmount,
+
           userId: user.id,
+
           type: "Перевод",
-          currency: "KGS",
+
+          currency:
+            selectedCurrency === "som"
+              ? "KGS"
+              : selectedCurrency === "rub"
+                ? "RUB"
+                : "USD",
+
           recipientId: recipientUser.id,
         },
       });
@@ -145,6 +231,8 @@ function Transferamount() {
       setAmount("");
 
       await allUser();
+
+      /* ================= УСПЕШНЫЙ ПЕРЕВОД ================= */
 
       navigate("/transfersuccess", {
         state: {
@@ -157,6 +245,8 @@ function Transferamount() {
           recipientName: `${recipientUser.firstname} ${recipientUser.lastname}`,
 
           recipientPhone: recipientUser.numberphone,
+
+          currency: selectedCurrency,
         },
       });
     } catch (error) {
@@ -165,6 +255,12 @@ function Transferamount() {
       alert("Ошибка при переводе");
     }
   };
+
+  const resultRub = Number(user?.rub) || 0;
+
+  const resultUsd = Number(user?.usd) || 0;
+
+  const resultSum = Number(user?.sum) || 0;
 
   return (
     <div className="app">
@@ -206,9 +302,7 @@ function Transferamount() {
         <div className="my-transfer-balance">
           <small>
             <small>
-              <center>
-                Мой баланс: {Number(user?.sum || 0).toFixed(2)} сом
-              </center>
+              <center></center>
             </small>
           </small>{" "}
         </div>
@@ -222,6 +316,127 @@ function Transferamount() {
 
           <div className="send-amount-line"></div>
         </div>
+
+        {/* ================= ВЫБОР СЧЁТА ================= */}
+
+        <div className="account-select-box">
+          <div className="account-select-title">Счёт для перевода</div>
+
+          <button
+            className="account-select-button"
+            onClick={() => setShowAccountModal(true)}
+          >
+            <div>
+              <i className="fa-solid fa-wallet"></i>
+
+              <span>
+                {selectedCurrency === "som" && <>Сом {resultSum}</>}
+
+                {selectedCurrency === "rub" && <>Рубль {resultRub}</>}
+
+                {selectedCurrency === "usd" && <>Доллар {resultUsd}</>}
+              </span>
+            </div>
+
+            <i className="fa-solid fa-chevron-right"></i>
+          </button>
+        </div>
+
+        <br />
+
+        {/* ================= МОДАЛЬНОЕ ОКНО ================= */}
+
+        {showAccountModal && (
+          <div className="account-modal-overlay">
+            <div className="account-modal">
+              <div className="account-modal-header">
+                <h2>Выбрать счёт</h2>
+
+                <button
+                  className="account-modal-close"
+                  onClick={() => setShowAccountModal(false)}
+                >
+                  <i className="fa-solid fa-xmark"></i>
+                </button>
+              </div>
+
+              <p className="account-modal-text">Выберите валюту счёта</p>
+
+              {/* SOM */}
+
+              <label className="account-radio">
+                <input
+                  type="radio"
+                  name="currency"
+                  value="som"
+                  checked={selectedCurrency === "som"}
+                  onChange={() => setSelectedCurrency("som")}
+                />
+
+                <div className="account-radio-info">
+                  <div className="account-radio-icon">{resultSum}</div>
+
+                  <div>
+                    <strong>Сом</strong>
+
+                    <span>KGS</span>
+                  </div>
+                </div>
+              </label>
+
+              {/* RUB */}
+
+              <label className="account-radio">
+                <input
+                  type="radio"
+                  name="currency"
+                  value="rub"
+                  checked={selectedCurrency === "rub"}
+                  onChange={() => setSelectedCurrency("rub")}
+                />
+
+                <div className="account-radio-info">
+                  <div className="account-radio-icon">{resultRub}</div>
+
+                  <div>
+                    <strong>Рубль</strong>
+
+                    <span>RUB</span>
+                  </div>
+                </div>
+              </label>
+
+              {/* USD */}
+
+              <label className="account-radio">
+                <input
+                  type="radio"
+                  name="currency"
+                  value="usd"
+                  checked={selectedCurrency === "usd"}
+                  onChange={() => setSelectedCurrency("usd")}
+                />
+
+                <div className="account-radio-info">
+                  <div className="account-radio-icon">{resultUsd}</div>
+
+                  <div>
+                    <strong>Доллар</strong>
+
+                    <span>USD</span>
+                  </div>
+                </div>
+              </label>
+
+              <button
+                className="account-modal-button"
+                onClick={() => setShowAccountModal(false)}
+              >
+                Выбрать
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* ================= КЛАВИАТУРА ================= */}
 

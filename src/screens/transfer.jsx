@@ -74,6 +74,13 @@ function Transfer() {
       return;
     }
 
+    const myId = JSON.parse(localStorage.getItem("id"));
+
+    if (myId == user.id) {
+      alert("Самому себе невозможно перевести");
+      return;
+    }
+
     console.log("ID получателя:", user.id);
     console.log("Имя:", user.firstname);
     console.log("Фамилия:", user.lastname);
