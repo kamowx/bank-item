@@ -3957,8 +3957,6 @@ body {
   font-size: 12px;
 }
 
-/* ================= КНОПКА ================= */
-
 .account-modal-button {
   width: 100%;
   height: 50px;
@@ -3973,4 +3971,39 @@ body {
   font-weight: 600;
 
   cursor: pointer;
+}
+
+.inpradio {
+  accent-color: #999;
+}
+
+.inpradio:checked {
+  accent-color: rgb(255, 255, 66);
+}
+
+.bottom-bar-item {
+  color: #aaafb5;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.i1:focus-within .bottom-bar-item {
+  color: #000;
+}
+
+.i1:focus-within {
+  outline: none;
+}
+
+.bottom-qr {
+  color: #aaafb5;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.i1:focus-within .bottom-qr {
+  color: #000;
+  background: transparent;
 }

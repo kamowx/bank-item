@@ -5,6 +5,7 @@ import Bottombar from "../components/bottombar";
 
 function EditProfile() {
   const navigate = useNavigate();
+  const [primary, setPrimary] = useState("");
 
   const [user, setUser] = useState(null);
   const [users, setUsers] = useState([]);
@@ -40,6 +41,17 @@ function EditProfile() {
         setSurname(currentUser?.lastname || "");
         setPhone(currentUser?.numberphone || "");
         setEmail(currentUser?.email || "");
+
+        if (primary === "som" || primary === "rub" || primary === "usd") {
+          setPrimary(primary);
+        } else {
+          setPrimary("");
+
+          setTimeout(() => {
+            alert("Пожалуйста, выберите основной счёт из 3 карт");
+            navigate("/home");
+          }, 1);
+        }
       }
     } catch (error) {
       console.error(error);

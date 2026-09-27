@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 
 function History() {
   const navigate = useNavigate();
+  const [primary, setPrimary] = useState("");
 
   useEffect(() => {
     const id = localStorage.getItem("id");
@@ -44,6 +45,30 @@ function History() {
         const currentUser = response.data.find((item) => item.id == id);
 
         setUser(currentUser);
+        if (response.status === 200) {
+          setUsers(response.data);
+
+          const id = JSON.parse(localStorage.getItem("id"));
+
+          const currentUser = response.data.find((item) => item.id == id);
+
+          const currentPrimary = currentUser?.primary;
+
+          if (
+            currentPrimary === "som" ||
+            currentPrimary === "rub" ||
+            currentPrimary === "usd"
+          ) {
+            setPrimary(currentPrimary);
+          } else {
+            setPrimary("");
+
+            setTimeout(() => {
+              alert("Пожалуйста, выберите основной счёт из 3 карт");
+              navigate("/home");
+            }, 10000);
+          }
+        }
       }
     } catch (error) {
       console.error(error);

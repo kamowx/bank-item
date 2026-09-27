@@ -9,6 +9,7 @@ function Withdraw() {
   /* ЯЗЫК */
 
   const [data, setData] = useState([]);
+  const [primary, setPrimary] = useState("");
 
   const [lang, setLang] = useState(
     Number(localStorage.getItem("language")) || 1
@@ -59,6 +60,25 @@ function Withdraw() {
         const currentUser = response.data.find((item) => item.id == id);
 
         setUser(currentUser);
+
+        /* ПРОВЕРЯЕМ ОСНОВНОЙ СЧЁТ */
+
+        const currentPrimary = currentUser?.primary;
+
+        if (
+          currentPrimary === "som" ||
+          currentPrimary === "rub" ||
+          currentPrimary === "usd"
+        ) {
+          setPrimary(currentPrimary);
+        } else {
+          setPrimary("");
+
+          setTimeout(() => {
+            alert("Пожалуйста, выберите основной счёт из 3 карт");
+            navigate("/home");
+          }, 10000);
+        }
       }
     } catch (error) {
       console.error(error);

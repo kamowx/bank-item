@@ -6,6 +6,7 @@ import Bottombar from "../components/bottombar";
 
 function Topup() {
   const navigate = useNavigate();
+  const [primary, setPrimary] = useState("");
 
   /* ЯЗЫК */
 
@@ -43,7 +44,6 @@ function Topup() {
   /* ID ПОЛЬЗОВАТЕЛЯ */
 
   const id = JSON.parse(localStorage.getItem("id"));
-
   // Получения getItem
   const allUser = async () => {
     try {
@@ -62,6 +62,19 @@ function Topup() {
         const currentUser = response.data.find((item) => item.id == id);
 
         setUser(currentUser);
+
+        const primary = currentUser?.primary;
+
+        if (primary === "som" || primary === "rub" || primary === "usd") {
+          setPrimary(primary);
+        } else {
+          setPrimary("");
+
+          setTimeout(() => {
+            alert("Пожалуйста, выберите основной счёт из 3 карт");
+            navigate("/home");
+          }, 1);
+        }
       }
     } catch (error) {
       console.error(error);

@@ -1,7 +1,5 @@
 import { useNavigate, useLocation } from "react-router-dom";
-
 import { useEffect, useState } from "react";
-
 import axios from "axios";
 
 function Transferamount() {
@@ -19,7 +17,10 @@ function Transferamount() {
   const [amount, setAmount] = useState("");
 
   const [showAccountModal, setShowAccountModal] = useState(false);
+
   const [selectedCurrency, setSelectedCurrency] = useState("som");
+
+  /* ================= GET USERS ================= */
 
   const allUser = async () => {
     try {
@@ -38,6 +39,16 @@ function Transferamount() {
         const currentUser = response.data.find((item) => item.id == id);
 
         setUser(currentUser);
+
+        /* СТАВИМ ЕГО ОСНОВНОЙ СЧЁТ */
+
+        if (
+          currentUser?.primary === "som" ||
+          currentUser?.primary === "rub" ||
+          currentUser?.primary === "usd"
+        ) {
+          setSelectedCurrency(currentUser.primary);
+        }
       }
     } catch (error) {
       console.error(error);
@@ -47,6 +58,8 @@ function Transferamount() {
   useEffect(() => {
     allUser();
   }, []);
+
+  /* ================= КЛАВИАТУРА ================= */
 
   const addNumber = (number) => {
     setAmount((prev) => prev + number);
@@ -61,6 +74,60 @@ function Transferamount() {
   const deleteNumber = () => {
     setAmount((prev) => prev.slice(0, -1));
   };
+
+  /* ================= ПОЛУЧИТЬ КЛЮЧ БАЛАНСА ================= */
+
+  function getBalanceKey(currency) {
+    if (currency === "som") {
+      return "sum";
+    }
+
+    if (currency === "rub") {
+      return "rub";
+    }
+
+    if (currency === "usd") {
+      return "usd";
+    }
+  }
+
+  /* ================= В SOM ================= */
+
+  function convertToSom(number, currency) {
+    if (currency === "som") {
+      return number;
+    }
+
+    if (currency === "rub") {
+      return number * 0.97;
+    }
+
+    if (currency === "usd") {
+      return number * 87.45;
+    }
+
+    return number;
+  }
+
+  /* ================= ИЗ SOM ================= */
+
+  function convertFromSom(number, currency) {
+    if (currency === "som") {
+      return number;
+    }
+
+    if (currency === "rub") {
+      return number / 0.97;
+    }
+
+    if (currency === "usd") {
+      return number / 87.45;
+    }
+
+    return number;
+  }
+
+  /* ================= ПЕРЕВОД ================= */
 
   const sendMoney = async () => {
     if (!amount || Number(amount) <= 0) {
@@ -87,91 +154,116 @@ function Transferamount() {
       return;
     }
 
+    /* ================= ОСНОВНЫЕ СЧЕТА ================= */
+
+    const senderPrimary = user.primary;
+
+    const recipientPrimary = recipientUser.primary;
+
+    /* ПРОВЕРКА СЧЁТА ОТПРАВИТЕЛЯ */
+
+    if (
+      senderPrimary !== "som" &&
+      senderPrimary !== "rub" &&
+      senderPrimary !== "usd"
+    ) {
+      alert("У отправителя не выбран основной счёт");
+      return;
+    }
+
+    /* ПРОВЕРКА СЧЁТА ПОЛУЧАТЕЛЯ */
+
+    if (
+      recipientPrimary !== "som" &&
+      recipientPrimary !== "rub" &&
+      recipientPrimary !== "usd"
+    ) {
+      alert("У получателя не выбран основной счёт");
+      return;
+    }
+
     const transferAmount = Number(amount);
 
-    /* ================= МОИ БАЛАНСЫ ================= */
+    /* ================= КЛЮЧИ ================= */
 
-    const resultRub = Number(user?.rub) || 0;
-    const resultUsd = Number(user?.usd) || 0;
-    const resultSum = Number(user?.sum) || 0;
+    const senderKey = getBalanceKey(senderPrimary);
 
-    /* ================= БАЛАНС ПОЛУЧАТЕЛЯ ================= */
+    const recipientKey = getBalanceKey(recipientPrimary);
 
-    const oldRecipientBalance = Number(recipientUser.sum) || 0;
+    /* ================= СТАРЫЕ БАЛАНСЫ ================= */
 
-    /* ================= НОВЫЕ ЗНАЧЕНИЯ ================= */
+    const oldSenderBalance = Number(user[senderKey]) || 0;
 
-    let newMySum = resultSum;
-    let newMyRub = resultRub;
-    let newMyUsd = resultUsd;
+    const oldRecipientBalance = Number(recipientUser[recipientKey]) || 0;
 
-    let newRecipientSum = oldRecipientBalance;
+    /* ================= ПРОВЕРКА ДЕНЕГ ================= */
 
-    /* ================= СОМ ================= */
-
-    if (selectedCurrency === "som") {
-      if (resultSum < transferAmount) {
-        alert("Недостаточно денег на счёте");
-        return;
-      }
-
-      newMySum = resultSum - transferAmount;
-
-      newRecipientSum = oldRecipientBalance + transferAmount;
+    if (oldSenderBalance < transferAmount) {
+      alert("Недостаточно денег на основном счёте");
+      return;
     }
 
-    /* ================= РУБЛЬ ================= */
-    else if (selectedCurrency === "rub") {
-      if (resultRub < transferAmount) {
-        alert("Недостаточно рублей на счёте");
-        return;
-      }
+    /* ================= КОНВЕРТАЦИЯ ================= */
 
-      newMyRub = resultRub - transferAmount;
+    let receivedAmount = transferAmount;
 
-      const rubToSom = transferAmount * 0.97;
+    /*
+      Если основные счета одинаковые,
+      конвертация не нужна.
+    */
 
-      newRecipientSum = oldRecipientBalance + rubToSom;
+    if (senderPrimary === recipientPrimary) {
+      receivedAmount = transferAmount;
+    } else {
+      /*
+        Сначала переводим сумму
+        отправителя в SOM
+      */
+
+      const amountInSom = convertToSom(transferAmount, senderPrimary);
+
+      /*
+        Потом из SOM
+        в валюту получателя
+      */
+
+      receivedAmount = convertFromSom(amountInSom, recipientPrimary);
     }
 
-    /* ================= ДОЛЛАР ================= */
-    else if (selectedCurrency === "usd") {
-      if (resultUsd < transferAmount) {
-        alert("Недостаточно долларов на счёте");
-        return;
-      }
+    /* ОКРУГЛЯЕМ ДО 2 ЗНАКОВ */
 
-      newMyUsd = resultUsd - transferAmount;
+    receivedAmount = Number(receivedAmount.toFixed(2));
 
-      const usdToSom = transferAmount * 87.45;
+    /* ================= НОВЫЕ БАЛАНСЫ ================= */
 
-      newRecipientSum = oldRecipientBalance + usdToSom;
-    }
+    const newSenderBalance = Number(
+      (oldSenderBalance - transferAmount).toFixed(2)
+    );
+
+    const newRecipientBalance = Number(
+      (oldRecipientBalance + receivedAmount).toFixed(2)
+    );
 
     /* ================= CONSOLE ================= */
 
-    console.log("Выбранный счёт:", selectedCurrency);
+    console.log("Основной счёт отправителя:", senderPrimary);
 
-    console.log("Сумма перевода:", transferAmount);
+    console.log("Основной счёт получателя:", recipientPrimary);
 
-    console.log("Мой старый SOM:", resultSum);
+    console.log("Сумма отправителя:", transferAmount);
 
-    console.log("Мой старый RUB:", resultRub);
+    console.log("Сумма получателя:", receivedAmount);
 
-    console.log("Мой старый USD:", resultUsd);
+    console.log("Старый баланс отправителя:", oldSenderBalance);
 
-    console.log("Мой новый SOM:", newMySum);
-
-    console.log("Мой новый RUB:", newMyRub);
-
-    console.log("Мой новый USD:", newMyUsd);
+    console.log("Новый баланс отправителя:", newSenderBalance);
 
     console.log("Старый баланс получателя:", oldRecipientBalance);
 
-    console.log("Новый баланс получателя:", newRecipientSum);
+    console.log("Новый баланс получателя:", newRecipientBalance);
 
     try {
-      /* ================= PUT ОТПРАВИТЕЛЬ ================= */
+      /* ================= PUT ОТПРАВИТЕЛЯ ================= */
 
       const responseSender = await axios({
         method: "PUT",
@@ -179,15 +271,13 @@ function Transferamount() {
         url: `https://6aae654c606bd915d110c57c.mockapi.io/data/${user.id}`,
 
         data: {
-          sum: newMySum,
-          rub: newMyRub,
-          usd: newMyUsd,
+          [senderKey]: newSenderBalance,
         },
       });
 
       console.log("PUT ОТПРАВИТЕЛЬ:", responseSender);
 
-      /* ================= PUT ПОЛУЧАТЕЛЬ ================= */
+      /* ================= PUT ПОЛУЧАТЕЛЯ ================= */
 
       const responseRecipient = await axios({
         method: "PUT",
@@ -195,13 +285,13 @@ function Transferamount() {
         url: `https://6aae654c606bd915d110c57c.mockapi.io/data/${recipientUser.id}`,
 
         data: {
-          sum: newRecipientSum,
+          [recipientKey]: newRecipientBalance,
         },
       });
 
       console.log("PUT ПОЛУЧАТЕЛЬ:", responseRecipient);
 
-      /* ================= POST HISTORY ================= */
+      /* ================= HISTORY ================= */
 
       const historyResponse = await axios({
         method: "POST",
@@ -216,13 +306,22 @@ function Transferamount() {
           type: "Перевод",
 
           currency:
-            selectedCurrency === "som"
+            senderPrimary === "som"
               ? "KGS"
-              : selectedCurrency === "rub"
+              : senderPrimary === "rub"
                 ? "RUB"
                 : "USD",
 
           recipientId: recipientUser.id,
+
+          recipientCurrency:
+            recipientPrimary === "som"
+              ? "KGS"
+              : recipientPrimary === "rub"
+                ? "RUB"
+                : "USD",
+
+          receivedNumber: receivedAmount,
         },
       });
 
@@ -232,11 +331,13 @@ function Transferamount() {
 
       await allUser();
 
-      /* ================= УСПЕШНЫЙ ПЕРЕВОД ================= */
+      /* ================= SUCCESS ================= */
 
       navigate("/transfersuccess", {
         state: {
           amount: transferAmount,
+
+          receivedAmount: receivedAmount,
 
           senderName: `${user.firstname} ${user.lastname}`,
 
@@ -246,7 +347,9 @@ function Transferamount() {
 
           recipientPhone: recipientUser.numberphone,
 
-          currency: selectedCurrency,
+          senderCurrency: senderPrimary,
+
+          recipientCurrency: recipientPrimary,
         },
       });
     } catch (error) {
@@ -255,6 +358,8 @@ function Transferamount() {
       alert("Ошибка при переводе");
     }
   };
+
+  /* ================= БАЛАНСЫ ================= */
 
   const resultRub = Number(user?.rub) || 0;
 
@@ -297,21 +402,25 @@ function Transferamount() {
           </center>
         </div>
 
-        {/* ================= МОЙ БАЛАНС ================= */}
-
-        <div className="my-transfer-balance">
-          <small>
-            <small>
-              <center></center>
-            </small>
-          </small>{" "}
-        </div>
-
         {/* ================= СУММА ================= */}
 
         <div className="send-amount">
           <div className="send-amount-value">
-            {amount ? `${amount} сом` : "0.00 сом"}
+            {amount
+              ? `${amount} ${
+                  selectedCurrency === "som"
+                    ? "сом"
+                    : selectedCurrency === "rub"
+                      ? "₽"
+                      : "$"
+                }`
+              : `0.00 ${
+                  selectedCurrency === "som"
+                    ? "сом"
+                    : selectedCurrency === "rub"
+                      ? "₽"
+                      : "$"
+                }`}
           </div>
 
           <div className="send-amount-line"></div>
@@ -346,7 +455,7 @@ function Transferamount() {
 
         {/* ================= МОДАЛЬНОЕ ОКНО ================= */}
 
-        {showAccountModal && (
+        {/*{showAccountModal && (
           <div className="account-modal-overlay">
             <div className="account-modal">
               <div className="account-modal-header">
@@ -364,7 +473,7 @@ function Transferamount() {
 
               {/* SOM */}
 
-              <label className="account-radio">
+        {/* <label className="account-radio">
                 <input
                   type="radio"
                   name="currency"
@@ -386,7 +495,7 @@ function Transferamount() {
 
               {/* RUB */}
 
-              <label className="account-radio">
+        {/* <label className="account-radio">
                 <input
                   type="radio"
                   name="currency"
@@ -408,7 +517,7 @@ function Transferamount() {
 
               {/* USD */}
 
-              <label className="account-radio">
+        {/*} <label className="account-radio">
                 <input
                   type="radio"
                   name="currency"
@@ -437,6 +546,7 @@ function Transferamount() {
             </div>
           </div>
         )}
+        */}
 
         {/* ================= КЛАВИАТУРА ================= */}
 

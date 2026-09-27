@@ -9,6 +9,7 @@ import Fastbar from "../components/fastbar";
 function Home() {
   const navigate = useNavigate();
   const [data, setData] = useState([]);
+  const [primary, setPrimary] = useState("");
 
   useEffect(() => {
     const id = localStorage.getItem("id");
@@ -48,6 +49,17 @@ function Home() {
         console.log("Текущий пользователь:", currentUser);
 
         setUser(currentUser);
+        const primary = currentUser?.primary;
+
+        if (primary === "som" || primary === "rub" || primary === "usd") {
+          setPrimary(primary);
+        } else {
+          setPrimary("");
+
+          setInterval(() => {
+            alert("Пожалуйста, выберите основной счёт из 3 карт");
+          }, 10000);
+        }
       }
     } catch (error) {
       console.error(error);
@@ -97,7 +109,23 @@ function Home() {
 
     navigate("/");
   };
+  const changePrimary = async (account) => {
+    setPrimary(account);
 
+    try {
+      const response = await axios({
+        method: "PUT",
+        url: `https://6aae654c606bd915d110c57c.mockapi.io/data/${user.id}`,
+        data: {
+          primary: account,
+        },
+      });
+
+      console.log("PUT PRIMARY:", response);
+    } catch (error) {
+      console.error("Ошибка PUT primary:", error);
+    }
+  };
   return (
     <div className="app">
       <div className="onboarding home-onboarding">
@@ -147,9 +175,15 @@ function Home() {
                 {/* Счет 1 */}
                 <div className="account-card account-card-black">
                   <div className="account-card-top">
-                    <span>Основной счет С</span>
+                    <span>Сом</span>
 
-                    <i className="fa-solid fa-ellipsis"></i>
+                    <input
+                      type="radio"
+                      name="primary"
+                      className="inpradio"
+                      checked={primary === "som"}
+                      onChange={() => changePrimary("som")}
+                    />
                   </div>
 
                   <div className="account-card-balance">
@@ -168,7 +202,13 @@ function Home() {
                   <div className="account-card-top">
                     <span>Рубль</span>
 
-                    <i className="fa-solid fa-ellipsis"></i>
+                    <input
+                      type="radio"
+                      name="primary"
+                      className="inpradio"
+                      checked={primary === "rub"}
+                      onChange={() => changePrimary("rub")}
+                    />
                   </div>
 
                   <div className="account-card-balance">
@@ -186,15 +226,18 @@ function Home() {
                 <div className="account-card account-card-light">
                   <div className="account-card-top">
                     <span>Доллары</span>
-
-                    <i className="fa-solid fa-ellipsis"></i>
+                    <input
+                      type="radio"
+                      name="primary"
+                      className="inpradio"
+                      checked={primary === "usd"}
+                      onChange={() => changePrimary("usd")}
+                    />
                   </div>
-
                   <div className="account-card-balance">
                     {resultUsd}
                     <span>$</span>
                   </div>
-
                   <div className="account-card-bottom">
                     <span>**** 6314</span>
                     <span>USD</span>

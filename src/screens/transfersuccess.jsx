@@ -72,9 +72,15 @@ function Transfersuccess() {
           {/* ================= AMOUNT ================= */}
 
           <div className="transfer-success-amount">
-            {recipient?.amount || 0}
+            {recipient?.receivedAmount || 0}
 
-            <span>сом</span>
+            <span>
+              {recipient?.recipientCurrency === "som"
+                ? "сом"
+                : recipient?.recipientCurrency === "rub"
+                  ? "₽"
+                  : "$"}
+            </span>
           </div>
 
           {/* ================= INFO ================= */}

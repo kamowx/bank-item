@@ -22,6 +22,7 @@ function Profile() {
 
   const [users, setUsers] = useState([]);
   const [user, setUser] = useState(null);
+  const [primary, setPrimary] = useState("");
 
   // Получения getItem
   const allUser = async () => {
@@ -45,6 +46,30 @@ function Profile() {
         console.log("Текущий пользователь:", currentUser);
 
         setUser(currentUser);
+        if (response.status === 200) {
+          setUsers(response.data);
+
+          const id = JSON.parse(localStorage.getItem("id"));
+
+          const currentUser = response.data.find((item) => item.id == id);
+
+          const currentPrimary = currentUser?.primary;
+
+          if (
+            currentPrimary === "som" ||
+            currentPrimary === "rub" ||
+            currentPrimary === "usd"
+          ) {
+            setPrimary(currentPrimary);
+          } else {
+            setPrimary("");
+
+            setTimeout(() => {
+              alert("Пожалуйста, выберите основной счёт из 3 карт");
+              navigate("/home");
+            }, 10000);
+          }
+        }
       }
     } catch (error) {
       console.error(error);
